@@ -1,0 +1,145 @@
+syntax = "proto3";
+
+package go_load;
+option go_package = "grpc/go_load";
+// import "google/api/annotations.proto";
+// import "buf/validate/validate.proto";
+
+service GoLoadService {
+    rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse);
+    rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse); // Create a client-side session when user logs in -- returns a token for further requests
+    rpc CreateDownloadTask(CreateDownloadTaskRequest) returns (CreateDownloadTaskResponse);
+    rpc GetDownloadTaskList(GetDownloadTaskListRequest) returns (GetDownloadTaskListResponse);
+    rpc UpdateDownloadTask(UpdateDownloadTaskRequest) returns (UpdateDownloadTaskResponse); // Update only when in PENDING status
+    rpc DeleteDownloadTask(DeleteDownloadTaskRequest) returns (DeleteDownloadTaskResponse);
+    rpc GetDownloadTaskFile(GetDownloadTaskFileRequest) returns (stream GetDownloadTaskFileResponse);
+}
+
+enum DownloadType {
+    DOWNLOAD_TYPE_UNSPECIFIED = 0;
+    DOWNLOAD_TYPE_HTTP = 1; // Download via HTTP
+    // DOWNLOAD_TYPE_FTP = 2; // Download via FTP
+}
+
+enum DownloadStatus {
+    DOWNLOAD_STATUS_UNSPECIFIED = 0;
+    DOWNLOAD_STATUS_PENDING = 1;
+    DOWNLOAD_STATUS_DOWNLOADING = 2;
+    DOWNLOAD_STATUS_FAILED = 3;
+    DOWNLOAD_STATUS_SUCCESS = 4;
+}
+
+message User {
+    uint64 id = 1;
+    string username = 2;
+}
+
+message DownloadTask {
+    uint64 id = 1;
+    User of_user = 2;
+    DownloadType download_type = 3;
+    string file_url = 4;
+    DownloadStatus download_status = 5;
+}
+
+message CreateAccountRequest {
+    string username = 1;
+    string password = 2; 
+}
+// message CreateAccountRequest {
+//     string username = 1 [(buf.validate.field).string = {
+//         pattern:   "^[a-zA-Z0-9]{6,32}$",
+//     }];
+//     string password = 2 [(buf.validate.field).string = {
+//         pattern:   "^[a-zA-Z0-9]{6,32}$",
+//     }];
+// }
+
+message CreateAccountResponse {
+    uint64 user_id = 1;
+}
+
+message CreateSessionRequest {
+    string username = 1;
+    string password = 2;
+}
+// message CreateSessionRequest {
+//     string username = 1 [(buf.validate.field).string = {
+//         pattern:   "^[a-zA-Z0-9]{6,32}$",
+//     }];
+//     string password = 2 [(buf.validate.field).string = {
+//         pattern:   "^[a-zA-Z0-9]{6,32}$",
+//     }];
+// }
+
+message CreateSessionResponse {
+    string token = 1; 
+}
+
+message CreateDownloadTaskRequest {
+    string token = 1;
+    DownloadType download_type = 2; 
+    string file_url = 3;
+}
+// message CreateDownloadTaskRequest {
+//     string token = 1;
+//     DownloadType download_type = 2; 
+//     string file_url = 3 [(buf.validate.field).string = {
+//         uri: true,
+//     }];
+// }
+
+message CreateDownloadTaskResponse {
+    DownloadTask download_task = 1;
+}
+
+message GetDownloadTaskListRequest {
+    string token = 1; 
+    uint64 offset = 2;
+    uint64 limit = 3;
+}
+// message GetDownloadTaskListRequest {
+//     string token = 1; 
+//     uint64 offset = 2;
+//     uint64 limit = 3 [(buf.validate.field).uint64 = {
+//         lte: 100
+//     }];
+// }
+
+message GetDownloadTaskListResponse {
+    repeated DownloadTask download_task_list = 1;
+    uint64 total_download_task_count = 2;
+}
+
+message UpdateDownloadTaskRequest {
+    string token = 1; 
+    uint64 download_task_id = 2;
+    string file_url = 3;
+}
+// message UpdateDownloadTaskRequest {
+//     string token = 1; 
+//     uint64 download_task_id = 2;
+//     string file_url = 3 [(buf.validate.field).string = {
+//         uri: true,
+//     }];
+// }
+
+message UpdateDownloadTaskResponse {
+    DownloadTask download_task = 1;
+}
+
+message DeleteDownloadTaskRequest {
+    string token = 1;  
+    uint64 download_task_id = 2;
+}
+
+message DeleteDownloadTaskResponse {}
+
+message GetDownloadTaskFileRequest {
+    string token = 1; 
+    uint64 download_task_id = 2;
+}
+
+message GetDownloadTaskFileResponse {
+    bytes file_content = 1;
+}   
