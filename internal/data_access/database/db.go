@@ -39,19 +39,19 @@ type Database interface {
 }
 
 // return sql.db de cam tu ben ngoai va tuong tac db
-func InitializeDB(DBConfig configs.DBConfig) (db *sql.DB, cleanup func(), err error) {
+func InitializeDB(databaseConfig configs.Database) (db *sql.DB, cleanup func(), err error) {
 	// Construct connection string
-	connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",
-		DBConfig.Username, 
-		DBConfig.Password, 
-		DBConfig.Host, 
-		DBConfig.Port, 
-		DBConfig.DBName,
+	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",
+		databaseConfig.Username,
+		databaseConfig.Password,
+		databaseConfig.Host,
+		databaseConfig.Port,
+		databaseConfig.Database,
 	)
 	// Open database connection
-	db, err = sql.Open("mysql", connStr)
+	db, err = sql.Open("mysql", connectionString)
 	if err != nil {
-		log.Printf("Error connecting to the database: ", err)
+		log.Printf("error connecting to the database: %v", err)
 		return nil, nil, err
 	}
 

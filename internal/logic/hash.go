@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"errors"
 
 	"github.com/haiyen11231/Internet-download-manager/internal/configs"
 	"golang.org/x/crypto/bcrypt"
@@ -9,14 +10,14 @@ import (
 
 type Hash interface {
 	Hash(ctx context.Context, data string) (string, error)
-	IsHashEqual(ctx context.Context, data, hash string) (bool, error)
+	IsHashEqual(ctx context.Context, data, hashed string) (bool, error)
 }
 
 type hash struct {
-	accountConfig *configs.AccountConfig
+	accountConfig configs.Account
 }
 
-func NewHash(accountConfig *configs.AccountConfig) Hash {
+func NewHash(accountConfig configs.Account) Hash {
 	return &hash{
 		accountConfig: accountConfig,
 	}
@@ -31,10 +32,10 @@ func (h *hash) Hash(ctx context.Context, data string) (string, error) {
 	return string(hashedPassword), nil
 }
 
-func (h *hash) IsHashEqual(ctx context.Context, data, hash string) (bool, error) {
+func (h *hash) IsHashEqual(ctx context.Context, data, hashed string) (bool, error) {
 	// implement check hash function
-	if err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(data)); err != nil {
-		if err == bcrypt.ErrMismatchedHashAndPassword {
+	if err := bcrypt.CompareHashAndPassword([]byte(hashed), []byte(data)); err != nil {
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
 			return false, nil
 		}
 		return false, err

@@ -1,5 +1,5 @@
 package configs
 
-type AccountConfig struct {
+type Account struct {
 	HashCost int `yaml:"hash_cost"`
 }

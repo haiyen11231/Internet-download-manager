@@ -10,8 +10,8 @@ import (
 type ConfigFilePath string
 
 type Config struct {
-	Account  AccountConfig `yaml:"account"`
-	Database DBConfig      `yaml:"database"`
+	Account  Account  `yaml:"account"`
+	Database Database `yaml:"database"`
 }
 
 // use yaml file input -> parse
@@ -30,16 +30,16 @@ type Config struct {
 
 // 	return config, nil
 // }
-func NewConfig(filePath ConfigFilePath) (*Config, error) {
+func NewConfig(filePath ConfigFilePath) (Config, error) {
 	configBytes, err := os.ReadFile(string(filePath))
 	if err != nil {
-		return nil, fmt.Errorf("failed to read YAML file: %w", err)
+		return Config{}, fmt.Errorf("failed to read YAML file: %w", err)
 	}
 
-	config := &Config{}
-	err = yaml.Unmarshal(configBytes, config)
+	config := Config{}
+	err = yaml.Unmarshal(configBytes, &config)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal YAML: %w", err)
+		return Config{}, fmt.Errorf("failed to unmarshal YAML: %w", err)
 	}
 
 	return config, nil

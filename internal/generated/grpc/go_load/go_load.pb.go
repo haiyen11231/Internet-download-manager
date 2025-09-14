@@ -123,28 +123,28 @@ func (DownloadStatus) EnumDescriptor() ([]byte, []int) {
 	return file_api_go_load_proto_rawDescGZIP(), []int{1}
 }
 
-type User struct {
+type Account struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Username      string                 `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
+	AccountName   string                 `protobuf:"bytes,2,opt,name=account_name,json=accountName,proto3" json:"account_name,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *User) Reset() {
-	*x = User{}
+func (x *Account) Reset() {
+	*x = Account{}
 	mi := &file_api_go_load_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *User) String() string {
+func (x *Account) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*User) ProtoMessage() {}
+func (*Account) ProtoMessage() {}
 
-func (x *User) ProtoReflect() protoreflect.Message {
+func (x *Account) ProtoReflect() protoreflect.Message {
 	mi := &file_api_go_load_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -156,21 +156,21 @@ func (x *User) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use User.ProtoReflect.Descriptor instead.
-func (*User) Descriptor() ([]byte, []int) {
+// Deprecated: Use Account.ProtoReflect.Descriptor instead.
+func (*Account) Descriptor() ([]byte, []int) {
 	return file_api_go_load_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *User) GetId() uint64 {
+func (x *Account) GetId() uint64 {
 	if x != nil {
 		return x.Id
 	}
 	return 0
 }
 
-func (x *User) GetUsername() string {
+func (x *Account) GetAccountName() string {
 	if x != nil {
-		return x.Username
+		return x.AccountName
 	}
 	return ""
 }
@@ -178,7 +178,7 @@ func (x *User) GetUsername() string {
 type DownloadTask struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	Id             uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	OfUser         *User                  `protobuf:"bytes,2,opt,name=of_user,json=ofUser,proto3" json:"of_user,omitempty"`
+	OfAccount      *Account               `protobuf:"bytes,2,opt,name=of_account,json=ofAccount,proto3" json:"of_account,omitempty"`
 	DownloadType   DownloadType           `protobuf:"varint,3,opt,name=download_type,json=downloadType,proto3,enum=go_load.DownloadType" json:"download_type,omitempty"`
 	FileUrl        string                 `protobuf:"bytes,4,opt,name=file_url,json=fileUrl,proto3" json:"file_url,omitempty"`
 	DownloadStatus DownloadStatus         `protobuf:"varint,5,opt,name=download_status,json=downloadStatus,proto3,enum=go_load.DownloadStatus" json:"download_status,omitempty"`
@@ -223,9 +223,9 @@ func (x *DownloadTask) GetId() uint64 {
 	return 0
 }
 
-func (x *DownloadTask) GetOfUser() *User {
+func (x *DownloadTask) GetOfAccount() *Account {
 	if x != nil {
-		return x.OfUser
+		return x.OfAccount
 	}
 	return nil
 }
@@ -253,7 +253,7 @@ func (x *DownloadTask) GetDownloadStatus() DownloadStatus {
 
 type CreateAccountRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	AccountName   string                 `protobuf:"bytes,1,opt,name=account_name,json=accountName,proto3" json:"account_name,omitempty"`
 	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -289,9 +289,9 @@ func (*CreateAccountRequest) Descriptor() ([]byte, []int) {
 	return file_api_go_load_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *CreateAccountRequest) GetUsername() string {
+func (x *CreateAccountRequest) GetAccountName() string {
 	if x != nil {
-		return x.Username
+		return x.AccountName
 	}
 	return ""
 }
@@ -305,7 +305,7 @@ func (x *CreateAccountRequest) GetPassword() string {
 
 type CreateAccountResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	AccountId     uint64                 `protobuf:"varint,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -340,16 +340,16 @@ func (*CreateAccountResponse) Descriptor() ([]byte, []int) {
 	return file_api_go_load_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *CreateAccountResponse) GetUserId() uint64 {
+func (x *CreateAccountResponse) GetAccountId() uint64 {
 	if x != nil {
-		return x.UserId
+		return x.AccountId
 	}
 	return 0
 }
 
 type CreateSessionRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	AccountName   string                 `protobuf:"bytes,1,opt,name=account_name,json=accountName,proto3" json:"account_name,omitempty"`
 	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -385,9 +385,9 @@ func (*CreateSessionRequest) Descriptor() ([]byte, []int) {
 	return file_api_go_load_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *CreateSessionRequest) GetUsername() string {
+func (x *CreateSessionRequest) GetAccountName() string {
 	if x != nil {
-		return x.Username
+		return x.AccountName
 	}
 	return ""
 }
@@ -401,7 +401,7 @@ func (x *CreateSessionRequest) GetPassword() string {
 
 type CreateSessionResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	User          *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	Account       *Account               `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"`
 	Token         string                 `protobuf:"bytes,2,opt,name=token,proto3" json:"token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -437,9 +437,9 @@ func (*CreateSessionResponse) Descriptor() ([]byte, []int) {
 	return file_api_go_load_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *CreateSessionResponse) GetUser() *User {
+func (x *CreateSessionResponse) GetAccount() *Account {
 	if x != nil {
-		return x.User
+		return x.Account
 	}
 	return nil
 }
@@ -959,26 +959,28 @@ var File_api_go_load_proto protoreflect.FileDescriptor
 
 const file_api_go_load_proto_rawDesc = "" +
 	"\n" +
-	"\x11api/go_load.proto\x12\ago_load\x1a\x12api/validate.proto\"2\n" +
-	"\x04User\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x1a\n" +
-	"\busername\x18\x02 \x01(\tR\busername\"\xdf\x01\n" +
+	"\x11api/go_load.proto\x12\ago_load\x1a\x12api/validate.proto\"<\n" +
+	"\aAccount\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x04R\x02id\x12!\n" +
+	"\faccount_name\x18\x02 \x01(\tR\vaccountName\"\xe8\x01\n" +
 	"\fDownloadTask\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x04R\x02id\x12&\n" +
-	"\aof_user\x18\x02 \x01(\v2\r.go_load.UserR\x06ofUser\x12:\n" +
+	"\x02id\x18\x01 \x01(\x04R\x02id\x12/\n" +
+	"\n" +
+	"of_account\x18\x02 \x01(\v2\x10.go_load.AccountR\tofAccount\x12:\n" +
 	"\rdownload_type\x18\x03 \x01(\x0e2\x15.go_load.DownloadTypeR\fdownloadType\x12\x19\n" +
 	"\bfile_url\x18\x04 \x01(\tR\afileUrl\x12@\n" +
-	"\x0fdownload_status\x18\x05 \x01(\x0e2\x17.go_load.DownloadStatusR\x0edownloadStatus\"\x86\x01\n" +
-	"\x14CreateAccountRequest\x126\n" +
-	"\busername\x18\x01 \x01(\tB\x1a\xfaB\x17r\x152\x13^[a-zA-Z0-9]{6,32}$R\busername\x126\n" +
-	"\bpassword\x18\x02 \x01(\tB\x1a\xfaB\x17r\x152\x13^[a-zA-Z0-9]{6,32}$R\bpassword\"0\n" +
-	"\x15CreateAccountResponse\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x04R\x06userId\"\x86\x01\n" +
-	"\x14CreateSessionRequest\x126\n" +
-	"\busername\x18\x01 \x01(\tB\x1a\xfaB\x17r\x152\x13^[a-zA-Z0-9]{6,32}$R\busername\x126\n" +
-	"\bpassword\x18\x02 \x01(\tB\x1a\xfaB\x17r\x152\x13^[a-zA-Z0-9]{6,32}$R\bpassword\"P\n" +
-	"\x15CreateSessionResponse\x12!\n" +
-	"\x04user\x18\x01 \x01(\v2\r.go_load.UserR\x04user\x12\x14\n" +
+	"\x0fdownload_status\x18\x05 \x01(\x0e2\x17.go_load.DownloadStatusR\x0edownloadStatus\"\x8d\x01\n" +
+	"\x14CreateAccountRequest\x12=\n" +
+	"\faccount_name\x18\x01 \x01(\tB\x1a\xfaB\x17r\x152\x13^[a-zA-Z0-9]{6,32}$R\vaccountName\x126\n" +
+	"\bpassword\x18\x02 \x01(\tB\x1a\xfaB\x17r\x152\x13^[a-zA-Z0-9]{6,32}$R\bpassword\"6\n" +
+	"\x15CreateAccountResponse\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\x01 \x01(\x04R\taccountId\"\x8d\x01\n" +
+	"\x14CreateSessionRequest\x12=\n" +
+	"\faccount_name\x18\x01 \x01(\tB\x1a\xfaB\x17r\x152\x13^[a-zA-Z0-9]{6,32}$R\vaccountName\x126\n" +
+	"\bpassword\x18\x02 \x01(\tB\x1a\xfaB\x17r\x152\x13^[a-zA-Z0-9]{6,32}$R\bpassword\"Y\n" +
+	"\x15CreateSessionResponse\x12*\n" +
+	"\aaccount\x18\x01 \x01(\v2\x10.go_load.AccountR\aaccount\x12\x14\n" +
 	"\x05token\x18\x02 \x01(\tR\x05token\"\x92\x01\n" +
 	"\x19CreateDownloadTaskRequest\x12\x14\n" +
 	"\x05token\x18\x01 \x01(\tR\x05token\x12:\n" +
@@ -1043,7 +1045,7 @@ var file_api_go_load_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_api_go_load_proto_goTypes = []any{
 	(DownloadType)(0),                   // 0: go_load.DownloadType
 	(DownloadStatus)(0),                 // 1: go_load.DownloadStatus
-	(*User)(nil),                        // 2: go_load.User
+	(*Account)(nil),                     // 2: go_load.Account
 	(*DownloadTask)(nil),                // 3: go_load.DownloadTask
 	(*CreateAccountRequest)(nil),        // 4: go_load.CreateAccountRequest
 	(*CreateAccountResponse)(nil),       // 5: go_load.CreateAccountResponse
@@ -1061,10 +1063,10 @@ var file_api_go_load_proto_goTypes = []any{
 	(*GetDownloadTaskFileResponse)(nil), // 17: go_load.GetDownloadTaskFileResponse
 }
 var file_api_go_load_proto_depIdxs = []int32{
-	2,  // 0: go_load.DownloadTask.of_user:type_name -> go_load.User
+	2,  // 0: go_load.DownloadTask.of_account:type_name -> go_load.Account
 	0,  // 1: go_load.DownloadTask.download_type:type_name -> go_load.DownloadType
 	1,  // 2: go_load.DownloadTask.download_status:type_name -> go_load.DownloadStatus
-	2,  // 3: go_load.CreateSessionResponse.user:type_name -> go_load.User
+	2,  // 3: go_load.CreateSessionResponse.account:type_name -> go_load.Account
 	0,  // 4: go_load.CreateDownloadTaskRequest.download_type:type_name -> go_load.DownloadType
 	3,  // 5: go_load.CreateDownloadTaskResponse.download_task:type_name -> go_load.DownloadTask
 	3,  // 6: go_load.GetDownloadTaskListResponse.download_task_list:type_name -> go_load.DownloadTask

@@ -13,14 +13,14 @@ type Handler struct {
 	accountLogic logic.Account
 }
 
-func NewHandler(accountLogic logic.Account) *Handler {
+func NewHandler(accountLogic logic.Account) go_load.GoLoadServiceServer {
 	return &Handler{
 		accountLogic: accountLogic,
 	}
 }
 
 // CreateAccount implements go_load.GoLoadServiceServer
-func (h *Handler) CreateAccount(ctx context.Context, req *go_load.CreateAccountRequest) (*go_load.CreateAccountResponse, error) {
+func (h Handler) CreateAccount(ctx context.Context, req *go_load.CreateAccountRequest) (*go_load.CreateAccountResponse, error) {
 	// View layer: co input tu req -> forward to logic layer to handle logic
 	output, err := h.accountLogic.CreateAccount(ctx, logic.CreateAccountParams{
 		AccountName: req.GetUsername(),
@@ -30,12 +30,12 @@ func (h *Handler) CreateAccount(ctx context.Context, req *go_load.CreateAccountR
 		return nil, err
 	}
 	return &go_load.CreateAccountResponse{
-		UserId:          output.ID
+		AccountId:          output.ID
 	}, nil
 }
 
 // CreateSession handles user login and returns a token
-func (h *Handler) CreateSession(ctx context.Context, req *go_load.CreateSessionRequest) (*go_load.CreateSessionResponse, error) {
+func (h Handler) CreateSession(ctx context.Context, req *go_load.CreateSessionRequest) (*go_load.CreateSessionResponse, error) {
 	// Receive username + password
 	// Check
 	// - if username exist 
@@ -46,26 +46,26 @@ func (h *Handler) CreateSession(ctx context.Context, req *go_load.CreateSessionR
 }
 
 // CreateDownloadTask handles creating a download task
-func (h *Handler) CreateDownloadTask(ctx context.Context, req *go_load.CreateDownloadTaskRequest) (*go_load.CreateDownloadTaskResponse, error) {
+func (h Handler) CreateDownloadTask(ctx context.Context, req *go_load.CreateDownloadTaskRequest) (*go_load.CreateDownloadTaskResponse, error) {
 	panic("unimplemented")
 }
 
 // GetDownloadTaskList returns a list of download tasks
-func (h *Handler) GetDownloadTaskList(ctx context.Context, req *go_load.GetDownloadTaskListRequest) (*go_load.GetDownloadTaskListResponse, error) {
+func (h Handler) GetDownloadTaskList(ctx context.Context, req *go_load.GetDownloadTaskListRequest) (*go_load.GetDownloadTaskListResponse, error) {
 	panic("unimplemented")
 }
 
 // UpdateDownloadTask updates a download task
-func (h *Handler) UpdateDownloadTask(ctx context.Context, req *go_load.UpdateDownloadTaskRequest) (*go_load.UpdateDownloadTaskResponse, error) {
+func (h Handler) UpdateDownloadTask(ctx context.Context, req *go_load.UpdateDownloadTaskRequest) (*go_load.UpdateDownloadTaskResponse, error) {
 	return nil, nil
 }
 
 // DeleteDownloadTask deletes a download task
-func (h *Handler) DeleteDownloadTask(ctx context.Context, req *go_load.DeleteDownloadTaskRequest) (*go_load.DeleteDownloadTaskResponse, error) {
+func (h Handler) DeleteDownloadTask(ctx context.Context, req *go_load.DeleteDownloadTaskRequest) (*go_load.DeleteDownloadTaskResponse, error) {
 	return nil, nil
 }
 
 // GetDownloadTaskFile streams file content
-func (h *Handler) GetDownloadTaskFile(req *go_load.GetDownloadTaskFileRequest, stream go_load.GoLoadService_GetDownloadTaskFileServer) error {
+func (h Handler) GetDownloadTaskFile(req *go_load.GetDownloadTaskFileRequest, stream go_load.GoLoadService_GetDownloadTaskFileServer) error {
 	return nil
 }

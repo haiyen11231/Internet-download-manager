@@ -253,10 +253,22 @@
     }
   },
   "definitions": {
+    "go_loadAccount": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "accountName": {
+          "type": "string"
+        }
+      }
+    },
     "go_loadCreateAccountRequest": {
       "type": "object",
       "properties": {
-        "username": {
+        "accountName": {
           "type": "string"
         },
         "password": {
@@ -267,7 +279,7 @@
     "go_loadCreateAccountResponse": {
       "type": "object",
       "properties": {
-        "userId": {
+        "accountId": {
           "type": "string",
           "format": "uint64"
         }
@@ -298,7 +310,7 @@
     "go_loadCreateSessionRequest": {
       "type": "object",
       "properties": {
-        "username": {
+        "accountName": {
           "type": "string"
         },
         "password": {
@@ -309,8 +321,8 @@
     "go_loadCreateSessionResponse": {
       "type": "object",
       "properties": {
-        "user": {
-          "$ref": "#/definitions/go_loadUser"
+        "account": {
+          "$ref": "#/definitions/go_loadAccount"
         },
         "token": {
           "type": "string"
@@ -350,8 +362,8 @@
           "type": "string",
           "format": "uint64"
         },
-        "ofUser": {
-          "$ref": "#/definitions/go_loadUser"
+        "ofAccount": {
+          "$ref": "#/definitions/go_loadAccount"
         },
         "downloadType": {
           "$ref": "#/definitions/go_loadDownloadType"
@@ -446,18 +458,6 @@
       "properties": {
         "downloadTask": {
           "$ref": "#/definitions/go_loadDownloadTask"
-        }
-      }
-    },
-    "go_loadUser": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "username": {
-          "type": "string"
         }
       }
     },

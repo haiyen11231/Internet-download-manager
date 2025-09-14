@@ -9,7 +9,7 @@ generate:
 		--validate_out="lang=go:internal/generated" \
 		api/go_load.proto
 
-# 	wire ./internal/wiring
+	wire ./internal/wiring
 
 clean_newsfeed:
 	rm internal/grpc/pb/newsfeed/*.go
