@@ -4,23 +4,44 @@ import (
 	"context"
 
 	"github.com/haiyen11231/Internet-download-manager/internal/generated/grpc/go_load"
+	"github.com/haiyen11231/Internet-download-manager/internal/logic"
 )
 
+// to forward input to logic layer + dkien condition khong the check bang validation
 type Handler struct {
 	go_load.UnimplementedGoLoadServiceServer
+	accountLogic logic.Account
 }
 
-func NewHandler() *Handler {
-	return &Handler{}
+func NewHandler(accountLogic logic.Account) *Handler {
+	return &Handler{
+		accountLogic: accountLogic,
+	}
 }
 
 // CreateAccount implements go_load.GoLoadServiceServer
 func (h *Handler) CreateAccount(ctx context.Context, req *go_load.CreateAccountRequest) (*go_load.CreateAccountResponse, error) {
-	panic("unimplemented")
+	// View layer: co input tu req -> forward to logic layer to handle logic
+	output, err := h.accountLogic.CreateAccount(ctx, logic.CreateAccountParams{
+		AccountName: req.GetUsername(),
+		Password:    req.GetPassword(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &go_load.CreateAccountResponse{
+		UserId:          output.ID
+	}, nil
 }
 
 // CreateSession handles user login and returns a token
 func (h *Handler) CreateSession(ctx context.Context, req *go_load.CreateSessionRequest) (*go_load.CreateSessionResponse, error) {
+	// Receive username + password
+	// Check
+	// - if username exist 
+	// - password valid
+	// return user info + session token
+
 	panic("unimplemented")
 }
 

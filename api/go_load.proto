@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package go_load;
 option go_package = "grpc/go_load";
+import "api/validate.proto";
 // import "google/api/annotations.proto";
 // import "buf/validate/validate.proto";
 
@@ -16,13 +17,13 @@ service GoLoadService {
 }
 
 enum DownloadType {
-    DOWNLOAD_TYPE_UNSPECIFIED = 0;
+    DOWNLOAD_TYPE_UNDEFINED = 0;
     DOWNLOAD_TYPE_HTTP = 1; // Download via HTTP
     // DOWNLOAD_TYPE_FTP = 2; // Download via FTP
 }
 
 enum DownloadStatus {
-    DOWNLOAD_STATUS_UNSPECIFIED = 0;
+    DOWNLOAD_STATUS_UNDEFINED = 0;
     DOWNLOAD_STATUS_PENDING = 1;
     DOWNLOAD_STATUS_DOWNLOADING = 2;
     DOWNLOAD_STATUS_FAILED = 3;
@@ -43,9 +44,14 @@ message DownloadTask {
 }
 
 message CreateAccountRequest {
-    string username = 1;
-    string password = 2; 
+    string username = 1 [(validate.rules).string = {
+        pattern:   "^[a-zA-Z0-9]{6,32}$",
+    }];
+    string password = 2 [(validate.rules).string = {
+        pattern:   "^[a-zA-Z0-9]{6,32}$",
+    }];
 }
+
 // message CreateAccountRequest {
 //     string username = 1 [(buf.validate.field).string = {
 //         pattern:   "^[a-zA-Z0-9]{6,32}$",
@@ -60,26 +66,25 @@ message CreateAccountResponse {
 }
 
 message CreateSessionRequest {
-    string username = 1;
-    string password = 2;
+    string username = 1 [(validate.rules).string = {
+        pattern:   "^[a-zA-Z0-9]{6,32}$",
+    }];
+    string password = 2 [(validate.rules).string = {
+        pattern:   "^[a-zA-Z0-9]{6,32}$",
+    }];
 }
-// message CreateSessionRequest {
-//     string username = 1 [(buf.validate.field).string = {
-//         pattern:   "^[a-zA-Z0-9]{6,32}$",
-//     }];
-//     string password = 2 [(buf.validate.field).string = {
-//         pattern:   "^[a-zA-Z0-9]{6,32}$",
-//     }];
-// }
 
 message CreateSessionResponse {
-    string token = 1; 
+    User user = 1;
+    string token = 2;
 }
 
 message CreateDownloadTaskRequest {
     string token = 1;
     DownloadType download_type = 2; 
-    string file_url = 3;
+    string file_url = 3 [(validate.rules).string = {
+        uri: true,
+    }];
 }
 // message CreateDownloadTaskRequest {
 //     string token = 1;
@@ -96,7 +101,9 @@ message CreateDownloadTaskResponse {
 message GetDownloadTaskListRequest {
     string token = 1; 
     uint64 offset = 2;
-    uint64 limit = 3;
+    uint64 limit = 3 [(validate.rules).uint64 = {
+        lte: 100
+    }];
 }
 // message GetDownloadTaskListRequest {
 //     string token = 1; 
@@ -114,7 +121,9 @@ message GetDownloadTaskListResponse {
 message UpdateDownloadTaskRequest {
     string token = 1; 
     uint64 download_task_id = 2;
-    string file_url = 3;
+    string file_url = 3  [(validate.rules).string = {
+        uri: true,
+    }];
 }
 // message UpdateDownloadTaskRequest {
 //     string token = 1; 

@@ -4,16 +4,16 @@ import (
 	"context"
 	"net"
 
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/validator"
 	"github.com/haiyen11231/Internet-download-manager/internal/generated/grpc/go_load"
 	"google.golang.org/grpc"
 )
 
-type server struct {
-	handler go_load.GoLoadServiceServer
-}
-
 type Server interface {
 	Start(ctx context.Context) error
+}
+type server struct {
+	handler go_load.GoLoadServiceServer
 }
 
 func NewServer (handler go_load.GoLoadServiceServer) Server {
@@ -31,12 +31,12 @@ func (s *server) Start(ctx context.Context) error {
 	defer listener.Close()
 
 	grpcServer := grpc.NewServer(
-		// grpc.ChainUnaryInterceptor(
-		// 	validator.UnaryServerInterceptor(),
-		// ),
-		// grpc.ChainStreamInterceptor(
-		// 	validator.StreamServerInterceptor(),
-		// ),
+		grpc.ChainUnaryInterceptor(
+			validator.UnaryServerInterceptor(),
+		),
+		grpc.ChainStreamInterceptor(
+			validator.StreamServerInterceptor(),
+		),
 	)
 	go_load.RegisterGoLoadServiceServer(grpcServer, s.handler)
 
