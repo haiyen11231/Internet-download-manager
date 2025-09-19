@@ -33,7 +33,7 @@ func NewAccountDataAccessor(database *goqu.Database) AccountDataAccessor {
 	}
 }
 
-func (a accountDataAccessor) CreateAccount(ctx context.Context, account *Account) (uint64, error) {
+func (a accountDataAccessor) CreateAccount(ctx context.Context, account Account) (uint64, error) {
 	result, err := a.database.Insert("accounts").Rows(goqu.Record{
 		"account_name":  account.AccountName,
 	}).Executor().ExecContext(ctx)
@@ -53,12 +53,12 @@ func (a accountDataAccessor) CreateAccount(ctx context.Context, account *Account
 
 func (a accountDataAccessor) GetAccountByID(ctx context.Context, accountID uint64) (Account, error) {
 	// implement get account by id in db
-	return nil, nil
+	return Account{}, nil
 }		
 
 func (a accountDataAccessor) GetAccountByAccountName(ctx context.Context, accountName string) (Account, error) {
 	// implement get account by username in db
-	return nil, nil
+	return Account{}, nil
 }
 
 // why? khi thay the db cua minh bang transaction db thi van nhan dc doi tuong AccountDataAccessor -> nhung func con lai van dc cai dat dua tren database interface cua minh thay vi dua tren 

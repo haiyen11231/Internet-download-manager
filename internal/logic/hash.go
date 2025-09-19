@@ -23,7 +23,7 @@ func NewHash(accountConfig configs.Account) Hash {
 	}
 }
 
-func (h *hash) Hash(ctx context.Context, data string) (string, error) {
+func (h hash) Hash(ctx context.Context, data string) (string, error) {
 	// implement hash function
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data), h.accountConfig.HashCost)
 	if err != nil {
@@ -32,7 +32,7 @@ func (h *hash) Hash(ctx context.Context, data string) (string, error) {
 	return string(hashedPassword), nil
 }
 
-func (h *hash) IsHashEqual(ctx context.Context, data, hashed string) (bool, error) {
+func (h hash) IsHashEqual(ctx context.Context, data, hashed string) (bool, error) {
 	// implement check hash function
 	if err := bcrypt.CompareHashAndPassword([]byte(hashed), []byte(data)); err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
