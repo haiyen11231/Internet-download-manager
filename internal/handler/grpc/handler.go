@@ -23,14 +23,14 @@ func NewHandler(accountLogic logic.Account) go_load.GoLoadServiceServer {
 func (h Handler) CreateAccount(ctx context.Context, req *go_load.CreateAccountRequest) (*go_load.CreateAccountResponse, error) {
 	// View layer: co input tu req -> forward to logic layer to handle logic
 	output, err := h.accountLogic.CreateAccount(ctx, logic.CreateAccountParams{
-		AccountName: req.GetUsername(),
+		AccountName: req.GetAccountName(),
 		Password:    req.GetPassword(),
 	})
 	if err != nil {
 		return nil, err
 	}
 	return &go_load.CreateAccountResponse{
-		AccountId:          output.ID
+		AccountId:          output.ID,
 	}, nil
 }
 

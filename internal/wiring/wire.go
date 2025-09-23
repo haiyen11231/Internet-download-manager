@@ -12,10 +12,12 @@ import (
 	"github.com/haiyen11231/Internet-download-manager/internal/handler"
 	"github.com/haiyen11231/Internet-download-manager/internal/handler/grpc"
 	"github.com/haiyen11231/Internet-download-manager/internal/logic"
+	"github.com/haiyen11231/Internet-download-manager/internal/utils"
 )
 
 var WireSet = wire.NewSet(
 	configs.WireSet,
+	utils.WireSet,
 	data_access.WireSet,
 	logic.WireSet,
 	handler.WireSet,

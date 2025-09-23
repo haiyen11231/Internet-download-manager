@@ -28,3 +28,4 @@ func NewDownloadTaskDataAccessor(database *goqu.Database) DownloadTaskDataAccess
 		database: database,
 	}
 }
+

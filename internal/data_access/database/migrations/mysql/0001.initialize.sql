@@ -9,6 +9,11 @@ CREATE TABLE IF NOT EXISTS `account_passwords` (
     FOREIGN KEY (`account_id`) REFERENCES `accounts`(`account_id`)
 )
 
+CREATE TABLE IF NOT EXISTS `token_public_keys` (
+    `key_id` UNSIGNED BIGINT PRIMARY KEY,
+    `public_key` VARBINARY(4096) NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS `download_tasks` (
     `task_id` UNSIGNED BIGINT PRIMARY KEY,
     `account_id` UNSIGNED BIGINT,

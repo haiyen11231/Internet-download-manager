@@ -29,7 +29,7 @@ type CreateSessionParams struct {
 
 type Account interface {
 	CreateAccount(ctx context.Context, params CreateAccountParams) (CreateAccountOutput, error)
-	CreateSession(ctx context.Context, params CreateSessionParams) (account Account, token string, err error)
+	CreateSession(ctx context.Context, params CreateSessionParams) (token string, err error)
 }
 
 type account struct {
@@ -37,15 +37,17 @@ type account struct {
 	accountDataAccessor      database.AccountDataAccessor
 	accountPasswordDataAccessor database.AccountPasswordDataAccessor
 	hashLogic               Hash
+	tokenLogic              Token
 }
 
 // constructor
-func NewAccount(goquDatabase *goqu.Database, accountDataAccessor database.AccountDataAccessor, accountPasswordDataAccessor database.AccountPasswordDataAccessor, hashLogic Hash) Account {
+func NewAccount(goquDatabase *goqu.Database, accountDataAccessor database.AccountDataAccessor, accountPasswordDataAccessor database.AccountPasswordDataAccessor, hashLogic Hash, tokenLogic Token) Account {
 	return &account{
 		goquDatabase:             goquDatabase,
 		accountDataAccessor:      accountDataAccessor,
 		accountPasswordDataAccessor: accountPasswordDataAccessor,
 		hashLogic:               hashLogic,
+		tokenLogic:              tokenLogic,
 	}
 }
 
@@ -70,6 +72,7 @@ func (a account) CreateAccount(ctx context.Context, params CreateAccountParams) 
 
 	// ktra transaction co loi k
 	var accountID uint64
+	// Create new transaction
 	txErr := a.goquDatabase.WithTx(func(td *goqu.TxDatabase) error {
 		isTaken, err := a.isAccountNameTaken(ctx, params.AccountName);
 		// tra ve err duy nhat thoi -> new co vde gif xay ra trong transaction thi se rollback lai
@@ -112,9 +115,29 @@ func (a account) CreateAccount(ctx context.Context, params CreateAccountParams) 
 	
 }
 
-func (a account) CreateSession(ctx context.Context, params CreateSessionParams) (account Account, token string, err error) {
+func (a account) CreateSession(ctx context.Context, params CreateSessionParams) (token string, err error) {
 	// get user by username
 	// check password
 	// generate token
-	return account, token, nil
+	existingAccount, err := a.accountDataAccessor.GetAccountByAccountName(ctx, params.AccountName)
+	// havent implement: loi xay ra do k tim thay trong db, loi connect to db
+	if err != nil {
+		return "", err
+	}
+
+	existingAccountPassword, err := a.accountPasswordDataAccessor.GetAccountPassword(ctx, existingAccount.AccountID)
+	if err != nil {
+		return "", err
+	}
+
+	isHashEqual, err := a.hashLogic.IsHashEqual(ctx, params.Password, existingAccountPassword.PasswordHash) 
+	if err != nil {
+		return "", err
+	}
+
+	if !isHashEqual {
+		return "", errors.New("invalid password")
+	}
+
+	return "", nil
 }

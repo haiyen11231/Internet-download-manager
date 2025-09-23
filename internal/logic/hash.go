@@ -14,18 +14,18 @@ type Hash interface {
 }
 
 type hash struct {
-	accountConfig configs.Account
+	authConfig configs.Auth
 }
 
-func NewHash(accountConfig configs.Account) Hash {
+func NewHash(authConfig configs.Auth) Hash {
 	return &hash{
-		accountConfig: accountConfig,
+		authConfig: authConfig,
 	}
 }
 
 func (h hash) Hash(ctx context.Context, data string) (string, error) {
 	// implement hash function
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data), h.accountConfig.HashCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data), h.authConfig.Hash.HashCost)
 	if err != nil {
 		return "", err
 	}
