@@ -13,6 +13,7 @@ type Config struct {
 	Auth    Auth     `yaml:"auth"`
 	Log     Log      `yaml:"log"`
 	Database Database `yaml:"database"`
+	Cache   Cache    `yaml:"cache"`
 }
 
 // use yaml file input -> parse

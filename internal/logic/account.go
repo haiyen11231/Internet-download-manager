@@ -6,7 +6,10 @@ import (
 	"errors"
 
 	"github.com/doug-martin/goqu/v9"
+	"github.com/haiyen11231/Internet-download-manager/internal/data_access/cache"
 	"github.com/haiyen11231/Internet-download-manager/internal/data_access/database"
+	"github.com/haiyen11231/Internet-download-manager/internal/utils"
+	"go.uber.org/zap"
 )
 
 // tao su tach biet giua layer grpc va logic
@@ -34,32 +37,47 @@ type Account interface {
 
 type account struct {
 	goquDatabase                *goqu.Database
+	takenAccountNameCache       cache.TakenAccountName
 	accountDataAccessor      database.AccountDataAccessor
 	accountPasswordDataAccessor database.AccountPasswordDataAccessor
 	hashLogic               Hash
 	tokenLogic              Token
+	logger                  *zap.Logger
 }
 
 // constructor
-func NewAccount(goquDatabase *goqu.Database, accountDataAccessor database.AccountDataAccessor, accountPasswordDataAccessor database.AccountPasswordDataAccessor, hashLogic Hash, tokenLogic Token) Account {
+func NewAccount(goquDatabase *goqu.Database, takenAccountNameCache cache.TakenAccountName, accountDataAccessor database.AccountDataAccessor, accountPasswordDataAccessor database.AccountPasswordDataAccessor, hashLogic Hash, tokenLogic Token, logger *zap.Logger) Account {
 	return &account{
 		goquDatabase:             goquDatabase,
+		takenAccountNameCache:    takenAccountNameCache,
 		accountDataAccessor:      accountDataAccessor,
 		accountPasswordDataAccessor: accountPasswordDataAccessor,
 		hashLogic:               hashLogic,
 		tokenLogic:              tokenLogic,
+		logger:                  logger,
 	}
 }
 
 func (a account) isAccountNameTaken (ctx context.Context, accountName string) (bool, error) {
-	_, err := a.accountDataAccessor.GetAccountByAccountName(ctx, accountName)
+	logger := utils.LoggerWithContext(ctx, a.logger).With(zap.String("account_name", accountName))
+	accountNameTaken, err := a.takenAccountNameCache.Has(ctx, accountName)
 	if err != nil {
+		logger.With(zap.Error(err)).Warn("failed to get account name from taken set in cache, will fall back to database")		// fallback to db check
+	} else {
+		return accountNameTaken, nil
+	}
+
+	if _, err := a.accountDataAccessor.GetAccountByAccountName(ctx, accountName); err != nil {
 		// Error when account name not exist
 		if errors.Is(err, sql.ErrNoRows) {
 			return false, nil
 		}
 		// Error of connection
 		return false, err
+	}
+
+	if err := a.takenAccountNameCache.Add(ctx, accountName); err != nil {
+		logger.With(zap.Error(err)).Warn("failed to add account name to taken set in cache")
 	}
 	return true, nil
 }	

@@ -5,12 +5,14 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	"database/sql"
 	"encoding/pem"
 	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/haiyen11231/Internet-download-manager/internal/configs"
+	"github.com/haiyen11231/Internet-download-manager/internal/data_access/cache"
 	"github.com/haiyen11231/Internet-download-manager/internal/data_access/database"
 	"github.com/haiyen11231/Internet-download-manager/internal/utils"
 	"go.uber.org/zap"
@@ -18,6 +20,10 @@ import (
 
 const (
 	rs512KeyPairBitCount = 2048
+)
+
+var (
+	errTokenPublicKeyNotFound = errors.New("token public key not found")
 )
 
 type Token interface {
@@ -28,6 +34,7 @@ type Token interface {
 
 type token struct {
 	accountDataAccessor        database.AccountDataAccessor
+	tokenPublicKeyCache        cache.TokenPublicKey
 	tokenPublicKeyDataAccessor database.TokenPublicKeyDataAccessor
 	expiresIn                  time.Duration
 	privateKey                 *rsa.PrivateKey
@@ -57,7 +64,7 @@ func pemEncodePublicKey(pubKey *rsa.PublicKey) ([]byte, error) {
 	return pem.EncodeToMemory(block), nil
 }
 
-func NewToken(accountDataAccessor database.AccountDataAccessor, tokenPublicKeyDataAccessor database.TokenPublicKeyDataAccessor, authConfig configs.Auth, logger *zap.Logger) (Token, error) {
+func NewToken(accountDataAccessor database.AccountDataAccessor, tokenPublicKeyCache cache.TokenPublicKey, tokenPublicKeyDataAccessor database.TokenPublicKeyDataAccessor, authConfig configs.Auth, logger *zap.Logger) (Token, error) {
 	expiresIn, err := authConfig.Token.GetExpiresInDuration()
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to parse expires_in")
@@ -87,6 +94,7 @@ func NewToken(accountDataAccessor database.AccountDataAccessor, tokenPublicKeyDa
 
 	return &token{
 		accountDataAccessor:        accountDataAccessor,
+		tokenPublicKeyCache:       tokenPublicKeyCache,
 		tokenPublicKeyDataAccessor: tokenPublicKeyDataAccessor,
 		expiresIn:                  expiresIn,
 		privateKey:                 rsaKeyPair,
@@ -99,10 +107,25 @@ func NewToken(accountDataAccessor database.AccountDataAccessor, tokenPublicKeyDa
 func (t token) getJWTPublicKey(ctx context.Context, id uint64) (*rsa.PublicKey, error) {
 	logger := utils.LoggerWithContext(ctx, t.logger).With(zap.Uint64("id", id))
 
+	cachedPublicKeyBytes, err := t.tokenPublicKeyCache.Get(ctx, id)
+	if err == nil && cachedPublicKeyBytes != nil {
+		return jwt.ParseRSAPublicKeyFromPEM(cachedPublicKeyBytes)
+	}
+
+	logger.With(zap.Error(err)).Warn("failed to get cached public key bytes, will fail back to database")
+
 	tokenPublicKey, err := t.tokenPublicKeyDataAccessor.GetPublicKey(ctx, id)
 	if err != nil {
-		logger.Error("cannot get token's public key from database")
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errTokenPublicKeyNotFound
+		}
+		logger.With(zap.Error(err)).Error("cannot get token's public key from database")
 		return nil, err
+	}
+
+	err = t.tokenPublicKeyCache.Set(ctx, id, tokenPublicKey.PublicKey)
+	if err != nil {
+		logger.With(zap.Error(err)).Warn("failed to set public key bytes into cache")
 	}
 
 	return jwt.ParseRSAPublicKeyFromPEM(tokenPublicKey.PublicKey)
