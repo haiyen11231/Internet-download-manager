@@ -7,6 +7,11 @@ import (
 	"log"
 
 	"github.com/doug-martin/goqu/v9"
+	"go.uber.org/zap"
+	// Register MySQL dialect and driver
+	_ "github.com/doug-martin/goqu/v9/dialect/mysql"
+	_ "github.com/go-sql-driver/mysql"
+	
 	"github.com/haiyen11231/Internet-download-manager/internal/configs"
 )
 

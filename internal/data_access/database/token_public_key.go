@@ -9,15 +9,18 @@ import (
 	"go.uber.org/zap"
 )
 
+var (
+	TabNameTokenPublicKeys          = goqu.T("token_public_keys")
+)
+
 const (
-	TabNameTokenPublicKeys          = "token_public_keys"
 	ColNameTokenPublicKeysID        = "key_id"
 	ColNameTokenPublicKeysPublicKey = "public_key"
 )
 
 type TokenPublicKey struct {
 	KeyID     uint64 `sql:"key_id"`
-	PublicKey []byte `sql:"public_key"`
+	PublicKey string `sql:"public_key"`
 }
 
 type TokenPublicKeyDataAccessor interface {

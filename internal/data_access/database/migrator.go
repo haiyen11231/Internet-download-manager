@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	//go:embed migrations/mysql
+	//go:embed migrations/mysql/*
 	migrationDirectoryMySQL embed.FS
 )
 

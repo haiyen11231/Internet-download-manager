@@ -9,8 +9,11 @@ import (
 	"go.uber.org/zap"
 )
 
+var (
+	TabNameAccounts = goqu.T("accounts")
+)
+
 const (
-	TabNameAccounts         = "accounts"
 	ColNameAccountsID 	 = "account_id"
 	ColNameAccountsAccountName    = "account_name"
 )

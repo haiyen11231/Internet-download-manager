@@ -9,8 +9,11 @@ import (
 	"go.uber.org/zap"
 )
 
+var (
+	TabNameAccountPasswords = goqu.T("account_passwords")
+)
+
 const (
-	TabNameAccountPasswords             = "account_passwords"
 	ColNameAccountPasswordsOfAccountID  = "account_id"
 	ColNameAccountPasswordsPasswordHash = "password_hash"
 )
