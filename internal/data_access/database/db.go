@@ -39,9 +39,9 @@ type Database interface {
 }
 
 // return sql.db de cam tu ben ngoai va tuong tac db
-func InitializeDB(databaseConfig configs.Database) (db *sql.DB, func(), err error) {
+func InitializeAndMigrateUpDB(databaseConfig configs.Database, logger *zap.Logger) (db *sql.DB, func(), err error) {
 	// Construct connection string
-	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",
+	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true",
 		databaseConfig.Username,
 		databaseConfig.Password,
 		databaseConfig.Host,
@@ -61,6 +61,13 @@ func InitializeDB(databaseConfig configs.Database) (db *sql.DB, func(), err erro
 		db.Close()
 	}
 	log.Println("Successfully connected to the database")
+
+	migrator := NewMigrator(db, logger)
+	err = migrator.Up(context.Background())
+	if err != nil {
+		logger.With(zap.Error(err)).Error("failed to execute database up migration")
+	}
+
 	return db, cleanup, nil
 }
 

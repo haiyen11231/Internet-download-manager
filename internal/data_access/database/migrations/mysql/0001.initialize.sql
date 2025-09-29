@@ -1,3 +1,6 @@
+-- +migrate Up
+
+-- +migrate StatementBegin
 CREATE TABLE IF NOT EXISTS `accounts` (
     `account_id` UNSIGNED BIGINT PRIMARY KEY,
     `account_name` VARCHAR(256) NOT NULL
@@ -23,3 +26,13 @@ CREATE TABLE IF NOT EXISTS `download_tasks` (
     `metadata` TEXT NOT NULL,
     FOREIGN KEY (`account_id`) REFERENCES `accounts`(`account_id`)
 );
+-- +migrate StatementEnd
+
+-- +migrate Down
+
+-- +migrate StatementBegin
+DROP TABLE IF EXISTS download_tasks;
+DROP TABLE IF EXISTS token_public_keys;
+DROP TABLE IF EXISTS account_passwords;
+DROP TABLE IF EXISTS accounts;
+-- +migrate StatementEnd
