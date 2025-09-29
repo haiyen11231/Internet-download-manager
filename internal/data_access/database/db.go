@@ -39,7 +39,7 @@ type Database interface {
 }
 
 // return sql.db de cam tu ben ngoai va tuong tac db
-func InitializeDB(databaseConfig configs.Database) (db *sql.DB, cleanup func(), err error) {
+func InitializeDB(databaseConfig configs.Database) (db *sql.DB, func(), err error) {
 	// Construct connection string
 	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",
 		databaseConfig.Username,
@@ -49,7 +49,7 @@ func InitializeDB(databaseConfig configs.Database) (db *sql.DB, cleanup func(), 
 		databaseConfig.Database,
 	)
 	// Open database connection
-	db, err = sql.Open("mysql", connectionString)
+	db, err := sql.Open("mysql", connectionString)
 	if err != nil {
 		log.Printf("error connecting to the database: %v", err)
 		return nil, nil, err
@@ -57,7 +57,7 @@ func InitializeDB(databaseConfig configs.Database) (db *sql.DB, cleanup func(), 
 
 	// Close the database connection when the function exits
 	// defer db.Close()	
-	cleanup = func() {
+	cleanup := func() {
 		db.Close()
 	}
 	log.Println("Successfully connected to the database")

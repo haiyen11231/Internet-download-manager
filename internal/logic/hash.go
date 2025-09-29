@@ -23,22 +23,22 @@ func NewHash(authConfig configs.Auth) Hash {
 	}
 }
 
-func (h hash) Hash(ctx context.Context, data string) (string, error) {
+func (h hash) Hash(_ context.Context, data string) (string, error) {
 	// implement hash function
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data), h.authConfig.Hash.HashCost)
 	if err != nil {
-		return "", err
+		return "", status.Errorf(codes.Internal, "failed to hash data: %+v", err)
 	}
 	return string(hashedPassword), nil
 }
 
-func (h hash) IsHashEqual(ctx context.Context, data, hashed string) (bool, error) {
+func (h hash) IsHashEqual(_ context.Context, data, hashed string) (bool, error) {
 	// implement check hash function
 	if err := bcrypt.CompareHashAndPassword([]byte(hashed), []byte(data)); err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
 			return false, nil
 		}
-		return false, err
+		return false, status.Errorf(codes.Internal, "failed to check if data equal hash: %+v", err)
 	}
 	return true, nil
 }

@@ -41,7 +41,7 @@ func InitializeLogger(logConfig configs.Log) (*zap.Logger, func(), error) {
 	return logger, cleanup, nil
 }
 
-func LoggerWithContext(ctx context.Context, logger *zap.Logger) *zap.Logger {
+func LoggerWithContext(_ context.Context, logger *zap.Logger) *zap.Logger {
 	return logger
 	// return logger.With(zap.String("request_id", ctx.Value("request_id").(string)))
 }

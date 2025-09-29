@@ -52,13 +52,13 @@ func (a accountDataAccessor) CreateAccount(ctx context.Context, account Account)
 
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to create account")
-		return 0, err
+		return 0, status.Errorf(codes.Internal, "failed to create account: %+v", err)
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to get last insert id after creating account")
-		return 0, err
+		return 0, status.Errorf(codes.Internal, "failed to get last insert id after creating account: %+v", err)
 	}
 
 	return uint64(id), nil
@@ -71,7 +71,7 @@ func (a accountDataAccessor) GetAccountByID(ctx context.Context, accountID uint6
 	found, err := a.database.From(TabNameAccounts).Where(goqu.Ex{ColNameAccountsID: accountID}).ScanStructContext(ctx, &account)
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to get account by id")
-		return Account{}, err
+		return Account{}, status.Errorf(codes.Internal, "failed to get account by id: %+v", err)
 	}
 
 	if !found {
@@ -88,7 +88,7 @@ func (a accountDataAccessor) GetAccountByAccountName(ctx context.Context, accoun
 	found, err := a.database.From(TabNameAccounts).Where(goqu.Ex{ColNameAccountsAccountName: accountName}).ScanStructContext(ctx, &account)
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to get account by account name")
-		return Account{}, err
+		return Account{}, status.Errorf(codes.Internal, "failed to get account by account name: %+v", err)
 	}
 
 	if !found {

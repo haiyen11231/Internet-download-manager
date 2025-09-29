@@ -27,7 +27,7 @@ type client struct {
 	logger      *zap.Logger
 }
 
-func NewClient(cacheConfig configs.Cache, logger *zap.Logger) (Client, error) {
+func NewClient(cacheConfig configs.Cache, logger *zap.Logger) Client {
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     cacheConfig.Address,
 		Username: cacheConfig.Username,
@@ -37,7 +37,7 @@ func NewClient(cacheConfig configs.Cache, logger *zap.Logger) (Client, error) {
 	return &client{
 		redisClient: redisClient,
 		logger:      logger,
-	}, nil
+	}
 }
 
 func (c client) Set(ctx context.Context, key string, data any, ttl time.Duration) error {
@@ -48,7 +48,7 @@ func (c client) Set(ctx context.Context, key string, data any, ttl time.Duration
 
 	if err := c.redisClient.Set(ctx, key, data, ttl).Err(); err != nil {
 		logger.With(zap.Error(err)).Error("failed to set data into cache")
-		return err
+		return status.Errorf(codes.Internal, "failed to set data into cache: %+v", err)
 	}
 
 	return nil
@@ -65,7 +65,7 @@ func (c client) Get(ctx context.Context, key string) (any, error) {
 		}
 
 		logger.With(zap.Error(err)).Error("failed to get data from cache")
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "failed to get data from cache: %+v", err)
 	}
 
 	return data, nil
@@ -78,7 +78,7 @@ func (c client) AddToSet(ctx context.Context, key string, data ...any) error {
 
 	if err := c.redisClient.SAdd(ctx, key, data...).Err(); err != nil {
 		logger.With(zap.Error(err)).Error("failed to add data to set in cache")
-		return err
+		return status.Errorf(codes.Internal, "failed to add data to set in cache: %+v", err)
 	}
 
 	return nil
@@ -92,7 +92,7 @@ func (c client) IsDataInSet(ctx context.Context, key string, data any) (bool, er
 	result, err := c.redisClient.SIsMember(ctx, key, data).Result()
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to check if data is member of set inside cache")
-		return false, err
+		return false, status.Errorf(codes.Internal, "failed to check if data is member of set inside cache: %+v", err)
 	}
 
 	return result, nil

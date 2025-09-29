@@ -3,6 +3,7 @@ package cache
 import (
 	"context"
 
+	"github.com/haiyen11231/Internet-download-manager/internal/utils"
 	"go.uber.org/zap"
 )
 
@@ -26,7 +27,10 @@ func NewTakenAccountName(client Client, logger *zap.Logger) TakenAccountName {
 }
 
 func (t takenAccountName) Add(ctx context.Context, accountName string) error {
+	logger := utils.LoggerWithContext(ctx, t.logger).With(zap.String("account_name", accountName))
+
 	if err := t.client.AddToSet(ctx, setKeyNameTakenAccountName, accountName); err != nil {
+		logger.With(zap.Error(err)).Error("failed to add account name to set in cache")
 		return err
 	}
 
@@ -34,5 +38,13 @@ func (t takenAccountName) Add(ctx context.Context, accountName string) error {
 }
 
 func (t takenAccountName) Has(ctx context.Context, accountName string) (bool, error) {
-	return t.client.IsDataInSet(ctx, setKeyNameTakenAccountName, accountName)
+	logger := utils.LoggerWithContext(ctx, t.logger).With(zap.String("account_name", accountName))
+	
+	result, err := t.client.IsDataInSet(ctx, setKeyNameTakenAccountName, accountName)
+	if err != nil {
+		logger.With(zap.Error(err)).Error("failed to check if account name is in set in cache")
+		return false, err
+	}
+
+	return result, nil
 }
