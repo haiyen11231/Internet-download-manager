@@ -5,6 +5,7 @@ database:
   password: goload
   database: goload
 cache:
+  type: "redis"
   address: 127.0.0.1:6379
   username: goload
   password: goload
