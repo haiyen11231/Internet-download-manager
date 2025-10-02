@@ -76,13 +76,11 @@ message CreateSessionRequest {
 
 message CreateSessionResponse {
     Account account = 1;
-    string token = 2;
 }
 
 message CreateDownloadTaskRequest {
-    string token = 1;
-    DownloadType download_type = 2; 
-    string file_url = 3 [(validate.rules).string = {
+    DownloadType download_type = 1;
+    string file_url = 2 [(validate.rules).string = {
         max_len: 2000,
     }];
 }
@@ -99,9 +97,8 @@ message CreateDownloadTaskResponse {
 }
 
 message GetDownloadTaskListRequest {
-    string token = 1; 
-    uint64 offset = 2;
-    uint64 limit = 3 [(validate.rules).uint64 = {
+    uint64 offset = 1;
+    uint64 limit = 2 [(validate.rules).uint64 = {
         lte: 100
     }];
 }
@@ -119,9 +116,8 @@ message GetDownloadTaskListResponse {
 }
 
 message UpdateDownloadTaskRequest {
-    string token = 1; 
-    uint64 download_task_id = 2;
-    string file_url = 3  [(validate.rules).string = {
+    uint64 download_task_id = 1;
+    string file_url = 2  [(validate.rules).string = {
         uri: true,
     }];
 }
@@ -138,15 +134,13 @@ message UpdateDownloadTaskResponse {
 }
 
 message DeleteDownloadTaskRequest {
-    string token = 1;  
-    uint64 download_task_id = 2;
+    uint64 download_task_id = 1;
 }
 
 message DeleteDownloadTaskResponse {}
 
 message GetDownloadTaskFileRequest {
-    string token = 1; 
-    uint64 download_task_id = 2;
+    uint64 download_task_id = 1;
 }
 
 message GetDownloadTaskFileResponse {

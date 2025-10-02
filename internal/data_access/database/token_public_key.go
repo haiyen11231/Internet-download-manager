@@ -48,12 +48,12 @@ func (t tokenPublicKeyDataAccessor) CreatePublicKey(ctx context.Context, tokenPu
 	}).Executor().ExecContext(ctx)
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to create token public key")
-		return 0, status.Errorf(codes.Internal, "failed to create token public key: %+v", err)
+		return 0, status.Error(codes.Internal, "failed to create token public key")
 	}
 	id, err := result.LastInsertId()
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to get last insert id")
-		return 0, status.Errorf(codes.Internal, "failed to get last insert id: %+v", err)
+		return 0, status.Error(codes.Internal, "failed to get last insert id")
 	}
 	return uint64(id), nil
 }
@@ -67,7 +67,7 @@ func (t tokenPublicKeyDataAccessor) GetPublicKey(ctx context.Context, id uint64)
 	}).Executor().ScanStructContext(ctx, &tokenPublicKey)
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to get token public key")
-		return TokenPublicKey{}, status.Errorf(codes.Internal, "failed to get token public key: %+v", err)
+		return TokenPublicKey{}, status.Error(codes.Internal, "failed to get token public key")
 	}
 
 	if !found {

@@ -7,6 +7,11 @@ import (
 	"github.com/haiyen11231/Internet-download-manager/internal/logic"
 )
 
+const (
+	//nolint:gosec // This is just to specify the metadata name
+	AuthTokenMetadataName = "GOLOAD_AUTH"
+)
+
 // to forward input to logic layer + dkien condition khong the check bang validation
 type Handler struct {
 	go_load.UnimplementedGoLoadServiceServer
@@ -19,6 +24,20 @@ func NewHandler(accountLogic logic.Account, downloadTaskLogic logic.DownloadTask
 		accountLogic:    accountLogic,
 		downloadTaskLogic: downloadTaskLogic,
 	}
+}
+
+func (a Handler) getAuthTokenMetadata(ctx context.Context) string {
+	metadata, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return ""
+	}
+
+	metadataValues := metadata.Get(AuthTokenMetadataName)
+	if len(metadataValues) == 0 {
+		return ""
+	}
+
+	return metadataValues[0]
 }
 
 // CreateAccount implements go_load.GoLoadServiceServer
@@ -52,18 +71,22 @@ func (h Handler) CreateSession(ctx context.Context, req *go_load.CreateSessionRe
 		return nil, err
 	}
 
+	err = grpc.SetHeader(ctx, metadata.Pairs(AuthTokenMetadataName, output.Token))
+	if err != nil {
+		return nil, err
+	}
+
 	return &go_load.CreateSessionResponse{
 		Account: output.Account,
-		Token:   output.Token,
 	}, nil
 }
 
 // CreateDownloadTask handles creating a download task
 func (h Handler) CreateDownloadTask(ctx context.Context, req *go_load.CreateDownloadTaskRequest) (*go_load.CreateDownloadTaskResponse, error) {
 	output, err := h.downloadTaskLogic.CreateDownloadTask(ctx, logic.CreateDownloadTaskParams{
-		Token:        req.GetToken(),
+		Token:        h.getAuthTokenMetadata(ctx),
 		DownloadType: req.GetDownloadType(),
-		URL:          req.GetUrl(),
+		URL:     req.GetFileUrl(),
 	})
 	if err != nil {
 		return nil, err
@@ -77,7 +100,7 @@ func (h Handler) CreateDownloadTask(ctx context.Context, req *go_load.CreateDown
 // GetDownloadTaskList returns a list of download tasks
 func (h Handler) GetDownloadTaskList(ctx context.Context, req *go_load.GetDownloadTaskListRequest) (*go_load.GetDownloadTaskListResponse, error) {
 	output, err := h.downloadTaskLogic.GetDownloadTaskList(ctx, logic.GetDownloadTaskListParams{
-		Token:  req.GetToken(),
+		Token:  h.getAuthTokenMetadata(ctx),
 		Offset: req.GetOffset(),
 		Limit:  req.GetLimit(),
 	})
@@ -94,9 +117,9 @@ func (h Handler) GetDownloadTaskList(ctx context.Context, req *go_load.GetDownlo
 // UpdateDownloadTask updates a download task
 func (h Handler) UpdateDownloadTask(ctx context.Context, req *go_load.UpdateDownloadTaskRequest) (*go_load.UpdateDownloadTaskResponse, error) {
 	output, err := h.downloadTaskLogic.UpdateDownloadTask(ctx, logic.UpdateDownloadTaskParams{
-		Token:          req.GetToken(),
+		Token:          h.getAuthTokenMetadata(ctx),
 		DownloadTaskID: req.GetDownloadTaskId(),
-		URL:            req.GetUrl(),
+		URL:            req.GetFileUrl(),
 	})
 	if err != nil {
 		return nil, err
@@ -110,7 +133,7 @@ func (h Handler) UpdateDownloadTask(ctx context.Context, req *go_load.UpdateDown
 // DeleteDownloadTask deletes a download task
 func (h Handler) DeleteDownloadTask(ctx context.Context, req *go_load.DeleteDownloadTaskRequest) (*go_load.DeleteDownloadTaskResponse, error) {
 	if err := h.downloadTaskLogic.DeleteDownloadTask(ctx, logic.DeleteDownloadTaskParams{
-		Token:          req.GetToken(),
+		Token:          h.getAuthTokenMetadata(ctx),
 		DownloadTaskID: req.GetDownloadTaskId(),
 	}); err != nil {
 		return nil, err

@@ -64,13 +64,13 @@ func (d downloadTaskDataAccessor) CreateDownloadTask(ctx context.Context, task D
 		ExecContext(ctx)
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to create download task")
-		return 0, status.Errorf(codes.Internal, "failed to create download task")
+		return 0, status.Error(codes.Internal, "failed to create download task")
 	}
 
 	lastInsertedID, err := result.LastInsertId()
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to get last inserted id")
-		return 0, status.Errorf(codes.Internal, "failed to get last inserted id")
+		return 0, status.Error(codes.Internal, "failed to get last inserted id")
 	}
 
 	return uint64(lastInsertedID), nil
@@ -92,7 +92,7 @@ func (d downloadTaskDataAccessor) GetDownloadTaskListOfAccount(ctx context.Conte
 		Executor().
 		ScanStructsContext(ctx, &downloadTaskList); err != nil {
 		logger.With(zap.Error(err)).Error("failed to get download task list of account")
-		return nil, status.Errorf(codes.Internal, "failed to get download task list of account")
+		return nil, status.Error(codes.Internal, "failed to get download task list of account")
 	}
 
 	return downloadTaskList, nil
@@ -106,8 +106,8 @@ func (d downloadTaskDataAccessor) GetDownloadTaskCountOfAccount(ctx context.Cont
 		Where(goqu.Ex{ColNameDownloadTaskOfAccountID: accountID}).
 		CountContext(ctx)
 	if err != nil {
-		logger.With(zap.Error(err)).Error("failed to count download task of user")
-		return 0, status.Errorf(codes.Internal, "failed to count download task of user")
+		logger.With(zap.Error(err)).Error("failed to count download task of account")
+		return 0, status.Error(codes.Internal, "failed to count download task of account")
 	}
 
 	return uint64(count), nil
@@ -124,7 +124,7 @@ func (d downloadTaskDataAccessor) GetDownloadTask(ctx context.Context, taskID ui
 		ScanStructContext(ctx, &downloadTask)
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to get download task")
-		return DownloadTask{}, status.Errorf(codes.Internal, "failed to get download task list of account")
+		return DownloadTask{}, status.Error(codes.Internal, "failed to get download task")
 	}
 
 	if !found {
@@ -147,7 +147,7 @@ func (d downloadTaskDataAccessor) GetDownloadTaskWithXLock(ctx context.Context, 
 		ScanStructContext(ctx, &downloadTask)
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to get download task")
-		return DownloadTask{}, status.Errorf(codes.Internal, "failed to get download task list of account")
+		return DownloadTask{}, status..Error(codes.Internal, "failed to get download task")
 	}
 
 	if !found {
@@ -168,7 +168,7 @@ func (d downloadTaskDataAccessor) UpdateDownloadTask(ctx context.Context, task D
 		Executor().
 		ExecContext(ctx); err != nil {
 		logger.With(zap.Error(err)).Error("failed to update download task")
-		return status.Errorf(codes.Internal, "failed to update download task")
+		return status.Error(codes.Internal, "failed to update download task")
 	}
 
 	return nil
@@ -183,7 +183,7 @@ func (d downloadTaskDataAccessor) DeleteDownloadTask(ctx context.Context, taskID
 		Executor().
 		ExecContext(ctx); err != nil {
 		logger.With(zap.Error(err)).Error("failed to delete download task")
-		return status.Errorf(codes.Internal, "failed to delete download task")
+		return status.Error(codes.Internal, "failed to delete download task")
 	}
 
 	return nil

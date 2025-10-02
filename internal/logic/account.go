@@ -2,7 +2,6 @@ package logic
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 
 	"github.com/doug-martin/goqu/v9"
@@ -76,14 +75,14 @@ func (a account) isAccountNameTaken (ctx context.Context, accountName string) (b
 	accountNameTaken, err := a.takenAccountNameCache.Has(ctx, accountName)
 	if err != nil {
 		logger.With(zap.Error(err)).Warn("failed to get account name from taken set in cache, will fall back to database")		// fallback to db check
-	} else {
-		return accountNameTaken, nil
+	} else if accountNameTaken {
+		return true, nil
 	}
 
 	_, err = a.accountDataAccessor.GetAccountByAccountName(ctx, accountName)
 	if err != nil {
 		// Error when account name not exist
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, database.ErrAccountNotFound) {
 			return false, nil
 		}
 		// Error of connection
@@ -107,7 +106,7 @@ func (a account) CreateAccount(ctx context.Context, params CreateAccountParams) 
 	accountNameTaken, err := a.isAccountNameTaken(ctx, params.AccountName)
 	// tra ve err duy nhat thoi -> new co vde gif xay ra trong transaction thi se rollback lai
 	if err != nil {
-		return CreateAccountOutput{}, status.Errorf(codes.Internal, "failed to check if account name is taken")
+		return CreateAccountOutput{}, status.Error(codes.Internal, "failed to check if account name is taken")
 	}
 
 	if accountNameTaken {

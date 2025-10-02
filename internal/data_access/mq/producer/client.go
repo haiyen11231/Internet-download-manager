@@ -4,6 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/IBM/sarama"
+	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/haiyen11231/Internet-download-manager/internal/configs"
 	"github.com/haiyen11231/Internet-download-manager/internal/utils"
 )
@@ -52,7 +57,7 @@ func (c client) Produce(ctx context.Context, queueName string, payload []byte) e
 		Value: sarama.ByteEncoder(payload),
 	}); err != nil {
 		logger.With(zap.Error(err)).Error("failed to produce message")
-		return status.Errorf(codes.Internal, "failed to produce message: %+v", err)
+		return status.Error(codes.Internal, "failed to produce message")
 	}
 
 	return nil

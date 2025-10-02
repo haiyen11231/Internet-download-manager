@@ -288,9 +288,6 @@
     "go_loadCreateDownloadTaskRequest": {
       "type": "object",
       "properties": {
-        "token": {
-          "type": "string"
-        },
         "downloadType": {
           "$ref": "#/definitions/go_loadDownloadType"
         },
@@ -323,18 +320,12 @@
       "properties": {
         "account": {
           "$ref": "#/definitions/go_loadAccount"
-        },
-        "token": {
-          "type": "string"
         }
       }
     },
     "go_loadDeleteDownloadTaskRequest": {
       "type": "object",
       "properties": {
-        "token": {
-          "type": "string"
-        },
         "downloadTaskId": {
           "type": "string",
           "format": "uint64"
@@ -388,9 +379,6 @@
     "go_loadGetDownloadTaskFileRequest": {
       "type": "object",
       "properties": {
-        "token": {
-          "type": "string"
-        },
         "downloadTaskId": {
           "type": "string",
           "format": "uint64"
@@ -409,9 +397,6 @@
     "go_loadGetDownloadTaskListRequest": {
       "type": "object",
       "properties": {
-        "token": {
-          "type": "string"
-        },
         "offset": {
           "type": "string",
           "format": "uint64"
@@ -441,9 +426,6 @@
     "go_loadUpdateDownloadTaskRequest": {
       "type": "object",
       "properties": {
-        "token": {
-          "type": "string"
-        },
         "downloadTaskId": {
           "type": "string",
           "format": "uint64"

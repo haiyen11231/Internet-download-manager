@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 
 	"github.com/haiyen11231/Internet-download-manager/internal/utils"
+	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 const (
@@ -40,13 +43,13 @@ func (d downloadTaskCreatedProducer) Produce(ctx context.Context, event Download
 	eventBytes, err := json.Marshal(event)
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to marshal download task created event")
-		return status.Errorf(codes.Internal, "failed to marshal download task created event: %+v", err)
+		return status.Error(codes.Internal, "failed to marshal download task created event")
 	}
 
 	err = d.client.Produce(ctx, MessageQueueDownloadTaskCreated, eventBytes)
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to produce download task created event")
-		return status.Errorf(codes.Internal, "failed to produce download task created event: %+v", err)
+		return status.Error(codes.Internal, "failed to produce download task created event")
 	}
 
 	return nil

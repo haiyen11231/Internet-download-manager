@@ -43,6 +43,7 @@ func NewConsumer(
 
 	return &consumer{
 		saramaConsumer: saramaConsumer,
+		queueNameToHandlerFuncMap: make(map[string]HandlerFunc),
 		logger:         logger,
 	}, nil
 }

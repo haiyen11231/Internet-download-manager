@@ -1,7 +1,7 @@
 -- +migrate Up
 CREATE TABLE IF NOT EXISTS `accounts` (
     `account_id` UNSIGNED BIGINT AUTO_INCREMENT PRIMARY KEY,
-    `account_name` VARCHAR(256) NOT NULL
+    `account_name` VARCHAR(256) NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS `account_passwords` (

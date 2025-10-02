@@ -52,7 +52,7 @@ func (a accountPasswordDataAccessor) CreateAccountPassword(ctx context.Context, 
 
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to create account password")
-		return status.Errorf(codes.Internal, "failed to create account password: %+v", err)
+		return status.Error(codes.Internal, "failed to create account password")
 	}
 
 	return nil
@@ -65,9 +65,9 @@ func (a accountPasswordDataAccessor) GetAccountPassword(ctx context.Context, acc
 	found, err := a.database.From(TabNameAccountPasswords).Where(goqu.Ex{ColNameAccountPasswordsOfAccountID: accountID}).ScanStructContext(ctx, &accountPassword)
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to get account password by account id")
-		return AccountPassword{}, AccountPassword{}, status.Errorf(codes.Internal, "failed to get account password by account id: %+v", err)
+		return AccountPassword{}, AccountPassword{}, status.Error(codes.Internal, "failed to get account password by account id")
 	}
-
+	
 	if !found {
 		logger.Warn("account password not found by account id")
 		return AccountPassword{}, sql.ErrNoRows
@@ -84,7 +84,7 @@ func (a accountPasswordDataAccessor) UpdateAccountPassword(ctx context.Context, 
 
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to update account password")
-		return status.Errorf(codes.Internal, "failed to update account password: %+v", err)
+		return status.Error(codes.Internal, "failed to update account password")
 	}
 
 	return nil
