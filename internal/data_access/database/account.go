@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/haiyen11231/Internet-download-manager/internal/utils"
@@ -19,7 +18,7 @@ const (
 )
 
 type Account struct {
-	AccountID   uint64 `db:"account_id"`
+	AccountID   uint64 `db:"account_id" goqu:"skipinsert,skipupdate"`
 	AccountName string `db:"account_name"`
 }
 
@@ -47,7 +46,7 @@ func NewAccountDataAccessor(database *goqu.Database, logger *zap.Logger) Account
 }
 
 func (a accountDataAccessor) CreateAccount(ctx context.Context, account Account) (uint64, error) {
-	logger := utils.LoggerWithContext(ctx, a.logger)
+	logger := utils.LoggerWithContext(ctx, a.logger).With(zap.Any("account", account))
 
 	result, err := a.database.Insert(TabNameAccounts).Rows(goqu.Record{
 		ColNameAccountsAccountName: account.AccountName,
@@ -79,14 +78,14 @@ func (a accountDataAccessor) GetAccountByID(ctx context.Context, accountID uint6
 
 	if !found {
 		logger.Warn("account not found by id")
-		return Account{}, sql.ErrNoRows
+		return Account{}, status.Error(codes.NotFound, "account not found")
 	}
 
 	return account, nil
 }		
 
 func (a accountDataAccessor) GetAccountByAccountName(ctx context.Context, accountName string) (Account, error) {
-	logger := utils.LoggerWithContext(ctx, a.logger)
+	logger := utils.LoggerWithContext(ctx, a.logger).With(zap.String("account_name", accountName))
 	account := Account{}
 	found, err := a.database.From(TabNameAccounts).Where(goqu.C(ColNameAccountsAccountName).Eq(accountName)).ScanStructContext(ctx, &account)
 	if err != nil {
@@ -96,7 +95,7 @@ func (a accountDataAccessor) GetAccountByAccountName(ctx context.Context, accoun
 
 	if !found {
 		logger.Warn("account not found by account name")
-		return Account{}, sql.ErrNoRows
+		return Account{}, status.Error(codes.NotFound, "account not found")
 	}
 	// implement get account by username in db
 	return Account{}, nil
@@ -107,5 +106,6 @@ func (a accountDataAccessor) GetAccountByAccountName(ctx context.Context, accoun
 func (a accountDataAccessor) WithDatabase(database Database) AccountDataAccessor {
 	return &accountDataAccessor{
 		database: database,
+		logger:   a.logger,
 	}
 }

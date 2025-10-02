@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/haiyen11231/Internet-download-manager/internal/data_access/database"
 	"github.com/haiyen11231/Internet-download-manager/internal/utils"
 )
 
@@ -13,7 +12,7 @@ const (
 )
 
 type DownloadTaskCreated struct {
-	DownloadTask database.DownloadTask
+	TaskID uint64 `json:"task_id"`
 }
 
 type DownloadTaskCreatedProducer interface {

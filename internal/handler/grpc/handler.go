@@ -44,7 +44,7 @@ func (h Handler) CreateSession(ctx context.Context, req *go_load.CreateSessionRe
 	// - password valid
 	// return user info + session token
 
-	token, err := h.accountLogic.CreateSession(ctx, logic.CreateSessionParams{
+	output, err := h.accountLogic.CreateSession(ctx, logic.CreateSessionParams{
 		AccountName: req.GetAccountName(),
 		Password:    req.GetPassword(),
 	})
@@ -53,7 +53,8 @@ func (h Handler) CreateSession(ctx context.Context, req *go_load.CreateSessionRe
 	}
 
 	return &go_load.CreateSessionResponse{
-		Token: token,
+		Account: output.Account,
+		Token:   output.Token,
 	}, nil
 }
 
@@ -69,23 +70,53 @@ func (h Handler) CreateDownloadTask(ctx context.Context, req *go_load.CreateDown
 	}
 
 	return &go_load.CreateDownloadTaskResponse{
-		DownloadTask: &output.DownloadTask,
+		DownloadTask: output.DownloadTask,
 	}, nil
 }
 
 // GetDownloadTaskList returns a list of download tasks
 func (h Handler) GetDownloadTaskList(ctx context.Context, req *go_load.GetDownloadTaskListRequest) (*go_load.GetDownloadTaskListResponse, error) {
-	panic("unimplemented")
+	output, err := h.downloadTaskLogic.GetDownloadTaskList(ctx, logic.GetDownloadTaskListParams{
+		Token:  req.GetToken(),
+		Offset: req.GetOffset(),
+		Limit:  req.GetLimit(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	
+	return &go_load.GetDownloadTaskListResponse{
+		DownloadTaskList:       output.DownloadTaskList,
+		TotalDownloadTaskCount: output.TotalDownloadTaskCount,
+	}, nil
 }
 
 // UpdateDownloadTask updates a download task
 func (h Handler) UpdateDownloadTask(ctx context.Context, req *go_load.UpdateDownloadTaskRequest) (*go_load.UpdateDownloadTaskResponse, error) {
-	return nil, nil
+	output, err := h.downloadTaskLogic.UpdateDownloadTask(ctx, logic.UpdateDownloadTaskParams{
+		Token:          req.GetToken(),
+		DownloadTaskID: req.GetDownloadTaskId(),
+		URL:            req.GetUrl(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	
+	return &go_load.UpdateDownloadTaskResponse{
+		DownloadTask: output.DownloadTask,
+	}, nil
 }
 
 // DeleteDownloadTask deletes a download task
 func (h Handler) DeleteDownloadTask(ctx context.Context, req *go_load.DeleteDownloadTaskRequest) (*go_load.DeleteDownloadTaskResponse, error) {
-	return nil, nil
+	if err := h.downloadTaskLogic.DeleteDownloadTask(ctx, logic.DeleteDownloadTaskParams{
+		Token:          req.GetToken(),
+		DownloadTaskID: req.GetDownloadTaskId(),
+	}); err != nil {
+		return nil, err
+	}
+
+	return &go_load.DeleteDownloadTaskResponse{}, nil
 }
 
 // GetDownloadTaskFile streams file content
