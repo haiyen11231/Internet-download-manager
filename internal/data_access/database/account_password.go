@@ -19,8 +19,8 @@ const (
 )
 
 type AccountPassword struct {
-	AccountID    uint64 `sql:"account_id"`
-	PasswordHash string `sql:"password_hash"`
+	AccountID    uint64 `db:"account_id"`
+	PasswordHash string `db:"password_hash"`
 }
 
 type AccountPasswordDataAccessor interface {

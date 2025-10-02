@@ -11,11 +11,13 @@ import (
 type Handler struct {
 	go_load.UnimplementedGoLoadServiceServer
 	accountLogic logic.Account
+	downloadTaskLogic logic.DownloadTask
 }
 
-func NewHandler(accountLogic logic.Account) go_load.GoLoadServiceServer {
+func NewHandler(accountLogic logic.Account, downloadTaskLogic logic.DownloadTask) go_load.GoLoadServiceServer {
 	return &Handler{
-		accountLogic: accountLogic,
+		accountLogic:    accountLogic,
+		downloadTaskLogic: downloadTaskLogic,
 	}
 }
 
@@ -42,12 +44,33 @@ func (h Handler) CreateSession(ctx context.Context, req *go_load.CreateSessionRe
 	// - password valid
 	// return user info + session token
 
-	panic("unimplemented")
+	token, err := h.accountLogic.CreateSession(ctx, logic.CreateSessionParams{
+		AccountName: req.GetAccountName(),
+		Password:    req.GetPassword(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &go_load.CreateSessionResponse{
+		Token: token,
+	}, nil
 }
 
 // CreateDownloadTask handles creating a download task
 func (h Handler) CreateDownloadTask(ctx context.Context, req *go_load.CreateDownloadTaskRequest) (*go_load.CreateDownloadTaskResponse, error) {
-	panic("unimplemented")
+	output, err := h.downloadTaskLogic.CreateDownloadTask(ctx, logic.CreateDownloadTaskParams{
+		Token:        req.GetToken(),
+		DownloadType: req.GetDownloadType(),
+		URL:          req.GetUrl(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &go_load.CreateDownloadTaskResponse{
+		DownloadTask: &output.DownloadTask,
+	}, nil
 }
 
 // GetDownloadTaskList returns a list of download tasks

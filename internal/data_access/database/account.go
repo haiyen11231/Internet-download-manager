@@ -19,8 +19,8 @@ const (
 )
 
 type Account struct {
-	AccountID   uint64 `sql:"account_id"`
-	AccountName string `sql:"account_name"`
+	AccountID   uint64 `db:"account_id"`
+	AccountName string `db:"account_name"`
 }
 
 type AccountDataAccessor interface {
@@ -71,7 +71,7 @@ func (a accountDataAccessor) GetAccountByID(ctx context.Context, accountID uint6
 	// implement get account by id in db
 	logger := utils.LoggerWithContext(ctx, a.logger)
 	account := Account{}
-	found, err := a.database.From(TabNameAccounts).Where(goqu.Ex{ColNameAccountsID: accountID}).ScanStructContext(ctx, &account)
+	found, err := a.database.From(TabNameAccounts).Where(goqu.C(ColNameAccountsID).Eq(accountID)).ScanStructContext(ctx, &account)
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to get account by id")
 		return Account{}, status.Errorf(codes.Internal, "failed to get account by id: %+v", err)
@@ -88,7 +88,7 @@ func (a accountDataAccessor) GetAccountByID(ctx context.Context, accountID uint6
 func (a accountDataAccessor) GetAccountByAccountName(ctx context.Context, accountName string) (Account, error) {
 	logger := utils.LoggerWithContext(ctx, a.logger)
 	account := Account{}
-	found, err := a.database.From(TabNameAccounts).Where(goqu.Ex{ColNameAccountsAccountName: accountName}).ScanStructContext(ctx, &account)
+	found, err := a.database.From(TabNameAccounts).Where(goqu.C(ColNameAccountsAccountName).Eq(accountName)).ScanStructContext(ctx, &account)
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to get account by account name")
 		return Account{}, status.Errorf(codes.Internal, "failed to get account by account name: %+v", err)
