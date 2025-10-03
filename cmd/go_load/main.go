@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/spf13/cobra"
+
 	"github.com/haiyen11231/Internet-download-manager/internal/configs"
 	"github.com/haiyen11231/Internet-download-manager/internal/wiring"
-	"github.com/spf13/cobra"
 )
 
 var (
