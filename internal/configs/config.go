@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/haiyen11231/Internet-download-manager/configs"
 	"gopkg.in/yaml.v2"
+
+	"github.com/haiyen11231/Internet-download-manager/configs"
 )
 
 type ConfigFilePath string
@@ -20,22 +21,6 @@ type Config struct {
 	MQ       MQ       `yaml:"mq"`
 }
 
-// use yaml file input -> parse
-// func NewConfig(filePath ConfigFilePath) (Config, error) {
-	
-// 	configBytes, err := os.ReadFile(string(filePath))
-// 	if err != nil {
-// 		return Config{}, fmt.Errorf("failed to read YAML file: %w", err)
-// 	}
-	
-// 	config := Config{}
-// 	err = yaml.Unmarshal(configBytes, &config)
-// 	if err != nil {
-// 		return Config{}, fmt.Errorf("failed to unmarshal YAML: %w", err)
-// 	}
-
-// 	return config, nil
-// }
 func NewConfig(filePath ConfigFilePath) (Config, error) {
 	var (
 		configBytes = configs.DefaultConfigBytes

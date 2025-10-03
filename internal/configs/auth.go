@@ -7,7 +7,7 @@ type Hash struct {
 }
 
 type Token struct {
-	ExpiresIn                   string `yaml:"expires_in"`
+	ExpireIn                   string `yaml:"expire_in"`
 	RegenerateTokenBeforeExpiry string `yaml:"regenerate_token_before_expiry"`
 }
 
@@ -16,8 +16,8 @@ type Auth struct {
 	Token Token 
 }
 
-func (t Token) GetExpiresInDuration() (time.Duration, error) {
-	return time.ParseDuration(t.ExpiresIn)
+func (t Token) GetExpireInDuration() (time.Duration, error) {
+	return time.ParseDuration(t.ExpireIn)
 }
 
 func (t Token) GetRegenerateTokenBeforeExpiryDuration() (time.Duration, error) {

@@ -7,17 +7,17 @@ database:
 cache:
   type: "redis"
   address: 127.0.0.1:6379
-  username: goload
-  password: goload
+  username: ""
+  password: ""
 mq:
   addresses:
     - 127.0.0.1:9092
   client_id: "go_load"
 auth:
   hash:
-    cost: 10
+    hash_cost: 10
   token:
-    expires_in: 24h
+    expire_in: 24h
     regenerate_token_before_expiry: 1h
 grpc:
   address: "0.0.0.0:8080"
