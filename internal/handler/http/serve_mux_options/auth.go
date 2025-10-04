@@ -23,11 +23,7 @@ func WithAuthCookieToAuthMetadata(authCookieName, authMetadataName string) runti
 	})
 }
 
-func WithAuthMetadataToAuthCookie(
-	authMetadataName,
-	authCookieName string,
-	expiresInDuration time.Duration,
-) runtime.ServeMuxOption {
+func WithAuthMetadataToAuthCookie(authMetadataName, authCookieName string, expiresInDuration time.Duration) runtime.ServeMuxOption {
 	return runtime.WithForwardResponseOption(func(ctx context.Context, w http.ResponseWriter, m proto.Message) error {
 		metadata, ok := runtime.ServerMetadataFromContext(ctx)
 		if !ok {

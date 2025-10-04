@@ -5,10 +5,12 @@ import (
 	"net"
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/validator"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+
 	"github.com/haiyen11231/Internet-download-manager/internal/configs"
 	"github.com/haiyen11231/Internet-download-manager/internal/generated/grpc/go_load"
 	"github.com/haiyen11231/Internet-download-manager/internal/utils"
-	"google.golang.org/grpc"
 )
 
 type Server interface {

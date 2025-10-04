@@ -3,6 +3,9 @@ package grpc
 import (
 	"context"
 
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
+
 	"github.com/haiyen11231/Internet-download-manager/internal/generated/grpc/go_load"
 	"github.com/haiyen11231/Internet-download-manager/internal/logic"
 )
@@ -144,5 +147,5 @@ func (h Handler) DeleteDownloadTask(ctx context.Context, req *go_load.DeleteDown
 
 // GetDownloadTaskFile streams file content
 func (h Handler) GetDownloadTaskFile(req *go_load.GetDownloadTaskFileRequest, stream go_load.GoLoadService_GetDownloadTaskFileServer) error {
-	return nil
+	panic("unimplemented")
 }

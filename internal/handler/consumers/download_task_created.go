@@ -3,6 +3,8 @@ package consumers
 import (
 	"context"
 
+	"go.uber.org/zap"
+
 	"github.com/haiyen11231/Internet-download-manager/internal/data_access/mq/producer"
 	"github.com/haiyen11231/Internet-download-manager/internal/utils"
 )
@@ -15,9 +17,7 @@ type downloadTaskCreated struct {
 	logger *zap.Logger
 }
 
-func NewDownloadTaskCreated(
-	logger *zap.Logger,
-) DownloadTaskCreated {
+func NewDownloadTaskCreated(logger *zap.Logger) DownloadTaskCreated {
 	return &downloadTaskCreated{
 		logger: logger,
 	}

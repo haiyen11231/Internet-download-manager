@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 
+	"go.uber.org/zap"
+
 	"github.com/haiyen11231/Internet-download-manager/internal/data_access/mq/consumer"
 	"github.com/haiyen11231/Internet-download-manager/internal/data_access/mq/producer"
 )
@@ -18,11 +20,7 @@ type root struct {
 	logger                     *zap.Logger
 }
 
-func NewRoot(
-	downloadTaskCreatedHandler DownloadTaskCreated,
-	mqConsumer consumer.Consumer,
-	logger *zap.Logger,
-) Root {
+func NewRoot(downloadTaskCreatedHandler DownloadTaskCreated, mqConsumer consumer.Consumer, logger *zap.Logger) Root {
 	return &root{
 		downloadTaskCreatedHandler: downloadTaskCreatedHandler,
 		mqConsumer:                 mqConsumer,

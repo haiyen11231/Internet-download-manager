@@ -6,15 +6,15 @@ import (
 	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/haiyen11231/Internet-download-manager/internal/configs"
 	"github.com/haiyen11231/Internet-download-manager/internal/generated/grpc/go_load"
 	handlerGRPC "github.com/haiyen11231/Internet-download-manager/internal/handler/grpc"
 	"github.com/haiyen11231/Internet-download-manager/internal/handler/servemuxoptions"
 	"github.com/haiyen11231/Internet-download-manager/internal/utils"
-	"go.uber.org/zap"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
@@ -22,15 +22,15 @@ const (
 	AuthTokenCookieName = "GOLOAD_AUTH"
 )
 
+type Server interface {
+	Start(ctx context.Context) error
+}
+
 type server struct {
 	grpcConfig configs.GRPC
 	httpConfig configs.HTTP
 	authConfig configs.Auth
 	logger     *zap.Logger
-}
-
-type Server interface {
-	Start(ctx context.Context) error
 }
 
 func NewServer(grpcConfig configs.GRPC, httpConfig configs.HTTP, authConfig configs.Auth, logger *zap.Logger) Server {
