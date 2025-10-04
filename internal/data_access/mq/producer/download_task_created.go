@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/haiyen11231/Internet-download-manager/internal/utils"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/haiyen11231/Internet-download-manager/internal/utils"
 )
 
 const (
@@ -15,7 +16,7 @@ const (
 )
 
 type DownloadTaskCreated struct {
-	TaskID uint64 `json:"task_id"`
+	ID uint64 `json:"id"`
 }
 
 type DownloadTaskCreatedProducer interface {

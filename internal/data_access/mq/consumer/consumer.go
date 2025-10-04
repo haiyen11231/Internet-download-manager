@@ -7,9 +7,10 @@ import (
 	"os/signal"
 
 	"github.com/IBM/sarama"
+	"go.uber.org/zap"
+
 	"github.com/haiyen11231/Internet-download-manager/internal/configs"
 	"github.com/haiyen11231/Internet-download-manager/internal/utils"
-	"go.uber.org/zap"
 )
 
 type HandlerFunc func(ctx context.Context, queueName string, payload []byte) error
@@ -20,9 +21,9 @@ type Consumer interface {
 }
 
 type consumer struct {
-	saramaConsumer                      sarama.Consumer
+	saramaConsumer            sarama.Consumer
+	logger                    *zap.Logger
 	queueNameToHandlerFuncMap map[string]HandlerFunc
-	logger                              *zap.Logger
 }
 
 func newSaramaConfig(mqConfig configs.MQ) *sarama.Config {
@@ -42,9 +43,9 @@ func NewConsumer(
 	}
 
 	return &consumer{
-		saramaConsumer: saramaConsumer,
+		saramaConsumer:            saramaConsumer,
+		logger:                    logger,
 		queueNameToHandlerFuncMap: make(map[string]HandlerFunc),
-		logger:         logger,
 	}, nil
 }
 
