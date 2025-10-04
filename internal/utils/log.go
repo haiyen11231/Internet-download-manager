@@ -3,8 +3,9 @@ package utils
 import (
 	"context"
 
-	"github.com/haiyen11231/Internet-download-manager/internal/configs"
 	"go.uber.org/zap"
+
+	"github.com/haiyen11231/Internet-download-manager/internal/configs"
 )
 
 func getZapLoggerLevel(level string) zap.AtomicLevel {
@@ -28,9 +29,9 @@ func InitializeLogger(logConfig configs.Log) (*zap.Logger, func(), error) {
 	zapLoggerConfig := zap.NewProductionConfig()
 	zapLoggerConfig.Level = getZapLoggerLevel(logConfig.Level)
 
-	logger, er := zapLoggerConfig.Build()
-	if er != nil {
-		return nil, nil, er
+	logger, err := zapLoggerConfig.Build()
+	if err != nil {
+		return nil, nil, err
 	}
 
 	cleanup := func() {
@@ -38,11 +39,10 @@ func InitializeLogger(logConfig configs.Log) (*zap.Logger, func(), error) {
 		_ = logger.Sync()
 	}
 
-	return logger, cleanup, nil
+	return logger, cleanup, err
 }
 
 func LoggerWithContext(_ context.Context, logger *zap.Logger) *zap.Logger {
 	//TODO: Add request ID to context
-	return logger
-	// return logger.With(zap.String("request_id", ctx.Value("request_id").(string)))
+	return Logger
 }
