@@ -10,12 +10,15 @@ import (
 	"errors"
 	"time"
 
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt"
+	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/haiyen11231/Internet-download-manager/internal/configs"
 	"github.com/haiyen11231/Internet-download-manager/internal/data_access/cache"
 	"github.com/haiyen11231/Internet-download-manager/internal/data_access/database"
 	"github.com/haiyen11231/Internet-download-manager/internal/utils"
-	"go.uber.org/zap"
 )
 
 const (

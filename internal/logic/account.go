@@ -5,11 +5,14 @@ import (
 	"errors"
 
 	"github.com/doug-martin/goqu/v9"
+	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/haiyen11231/Internet-download-manager/internal/data_access/cache"
 	"github.com/haiyen11231/Internet-download-manager/internal/data_access/database"
 	"github.com/haiyen11231/Internet-download-manager/internal/generated/grpc/go_load"
 	"github.com/haiyen11231/Internet-download-manager/internal/utils"
-	"go.uber.org/zap"
 )
 
 // tao su tach biet giua layer grpc va logic
@@ -65,7 +68,7 @@ func NewAccount(goquDatabase *goqu.Database, takenAccountNameCache cache.TakenAc
 
 func (a account) databaseAccountToProtoAccount(account database.Account) *go_load.Account {
 	return &go_load.Account{
-		AccountID:          account.accountID,
+		Id:          account.ID,
 		AccountName: account.AccountName,
 	}
 }
@@ -131,7 +134,7 @@ func (a account) CreateAccount(ctx context.Context, params CreateAccountParams) 
 		}
 
 		err = a.accountPasswordDataAccessor.WithDatabase(td).CreateAccountPassword(ctx, database.AccountPassword{
-			AccountID: accountID,
+			OfAccountID: accountID,
 			PasswordHash: hashedPassword,
 		})
 		if err != nil {
@@ -158,7 +161,7 @@ func (a account) CreateSession(ctx context.Context, params CreateSessionParams) 
 		return CreateSessionOutput{}, err
 	}
 
-	existingAccountPassword, err := a.accountPasswordDataAccessor.GetAccountPassword(ctx, existingAccount.AccountID)
+	existingAccountPassword, err := a.accountPasswordDataAccessor.GetAccountPassword(ctx, existingAccount.ID)
 	if err != nil {
 		return CreateSessionOutput{}, err
 	}

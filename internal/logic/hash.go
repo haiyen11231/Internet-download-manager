@@ -4,8 +4,11 @@ import (
 	"context"
 	"errors"
 
-	"github.com/haiyen11231/Internet-download-manager/internal/configs"
 	"golang.org/x/crypto/bcrypt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
+	"github.com/haiyen11231/Internet-download-manager/internal/configs"
 )
 
 type Hash interface {
@@ -29,6 +32,7 @@ func (h hash) Hash(_ context.Context, data string) (string, error) {
 	if err != nil {
 		return "", status.Error(codes.Internal, "failed to hash data")
 	}
+
 	return string(hashedPassword), nil
 }
 
@@ -40,5 +44,6 @@ func (h hash) IsHashEqual(_ context.Context, data, hashed string) (bool, error) 
 		}
 		return false, status.Error(codes.Internal, "failed to check if data equal hash")
 	}
+	
 	return true, nil
 }

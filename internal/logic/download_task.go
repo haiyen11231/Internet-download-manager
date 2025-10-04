@@ -4,9 +4,14 @@ import (
 	"context"
 
 	"github.com/doug-martin/goqu/v9"
+	"github.com/samber/lo"
+	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/haiyen11231/Internet-download-manager/internal/data_access/database"
 	"github.com/haiyen11231/Internet-download-manager/internal/data_access/mq/producer"
-	"go.uber.org/zap"
+	"github.com/haiyen11231/Internet-download-manager/internal/generated/grpc/go_load"
 )
 
 type CreateDownloadTaskParams struct {
@@ -79,14 +84,11 @@ func NewDownloadTask(
 	}
 }
 
-func (d downloadTask) databaseDownloadTaskToProtoDownloadTask(
-	downloadTask database.DownloadTask,
-	account database.Account,
-) *go_load.DownloadTask {
+func (d downloadTask) databaseDownloadTaskToProtoDownloadTask(downloadTask database.DownloadTask, account database.Account) *go_load.DownloadTask {
 	return &go_load.DownloadTask{
-		TaskID:        downloadTask.TaskID,
-		AccountID:      &go_load.Account{
-			AccountID: account.AccountID,
+		Id:        downloadTask.ID,
+		OfAccount: &go_load.Account{
+			Id:          account.ID,
 			AccountName: account.AccountName,
 		},
 		DownloadType:   downloadTask.DownloadType,
@@ -95,11 +97,13 @@ func (d downloadTask) databaseDownloadTaskToProtoDownloadTask(
 	}
 }
 
-func (d downloadTask) CreateDownloadTask(
-	ctx context.Context,
-	params CreateDownloadTaskParams,
-) (CreateDownloadTaskOutput, error) {
+func (d downloadTask) CreateDownloadTask(ctx context.Context, params CreateDownloadTaskParams) (CreateDownloadTaskOutput, error) {
 	accountID, _, err := d.tokenLogic.GetAccountIDAndExpireTime(ctx, params.Token)
+	if err != nil {
+		return CreateDownloadTaskOutput{}, err
+	}
+
+	account, err := d.accountDataAccessor.GetAccountByID(ctx, accountID)
 	if err != nil {
 		return CreateDownloadTaskOutput{}, err
 	}
@@ -141,10 +145,7 @@ func (d downloadTask) CreateDownloadTask(
 	}, nil
 }
 
-func (d downloadTask) GetDownloadTaskList(
-	ctx context.Context,
-	params GetDownloadTaskListParams,
-) (GetDownloadTaskListOutput, error) {
+func (d downloadTask) GetDownloadTaskList(ctx context.Context, params GetDownloadTaskListParams) (GetDownloadTaskListOutput, error) {
 	accountID, _, err := d.tokenLogic.GetAccountIDAndExpireTime(ctx, params.Token)
 	if err != nil {
 		return GetDownloadTaskListOutput{}, err
@@ -174,10 +175,7 @@ func (d downloadTask) GetDownloadTaskList(
 	}, nil
 }
 
-func (d downloadTask) UpdateDownloadTask(
-	ctx context.Context,
-	params UpdateDownloadTaskParams,
-) (UpdateDownloadTaskOutput, error) {
+func (d downloadTask) UpdateDownloadTask(ctx context.Context, params UpdateDownloadTaskParams) (UpdateDownloadTaskOutput, error) {
 	accountID, _, err := d.tokenLogic.GetAccountIDAndExpireTime(ctx, params.Token)
 	if err != nil {
 		return UpdateDownloadTaskOutput{}, err
