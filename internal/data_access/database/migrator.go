@@ -5,6 +5,9 @@ import (
 	"database/sql"
 	"embed"
 
+	migrate "github.com/rubenv/sql-migrate"
+	"go.uber.org/zap"
+
 	"github.com/haiyen11231/Internet-download-manager/internal/utils"
 )
 

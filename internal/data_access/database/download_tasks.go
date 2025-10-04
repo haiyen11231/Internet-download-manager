@@ -4,9 +4,12 @@ import (
 	"context"
 
 	"github.com/doug-martin/goqu/v9"
+	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/haiyen11231/Internet-download-manager/internal/generated/grpc/go_load"
 	"github.com/haiyen11231/Internet-download-manager/internal/utils"
-	"go.uber.org/zap"
 )
 
 var (
@@ -14,8 +17,8 @@ var (
 )
 
 const (
-	ColNameDownloadTaskID             = "task_id"
-	ColNameDownloadTaskOfAccountID    = "account_id"
+	ColNameDownloadTaskID             = "id"
+	ColNameDownloadTaskOfAccountID    = "of_account_id"
 	ColNameDownloadTaskDownloadType   = "download_type"
 	ColNameDownloadTaskURL            = "file_url"
 	ColNameDownloadTaskDownloadStatus = "download_status"
@@ -23,8 +26,8 @@ const (
 )
 
 type DownloadTask struct {
-	TaskID         uint64 `db:"task_id" goqu:"skipinsert,skipupdate"`
-	AccountID      uint64 `db:"account_id" goqu:"skipinsert,skipupdate"`
+	TaskID         uint64 `db:"id" goqu:"skipinsert,skipupdate"`
+	AccountID      uint64 `db:"of_account_id" goqu:"skipinsert,skipupdate"`
 	DownloadType   go_load.DownloadType `db:"download_type"`
 	FileURL        string                `db:"file_url"`
 	DownloadStatus go_load.DownloadStatus `db:"download_status"`
@@ -35,10 +38,10 @@ type DownloadTaskDataAccessor interface {
 	CreateDownloadTask(ctx context.Context, task DownloadTask) (uint64, error)
 	GetDownloadTaskListOfAccount(ctx context.Context, accountID, offset, limit uint64) ([]DownloadTask, error)
 	GetDownloadTaskCountOfAccount(ctx context.Context, accountID uint64) (uint64, error)
-	GetDownloadTask(ctx context.Context, taskID uint64) (DownloadTask, error)
-	GetDownloadTaskWithXLock(ctx context.Context, taskID uint64) (DownloadTask, error)
+	GetDownloadTask(ctx context.Context, id uint64) (DownloadTask, error)
+	GetDownloadTaskWithXLock(ctx context.Context, id uint64) (DownloadTask, error)
 	UpdateDownloadTask(ctx context.Context, task DownloadTask) error
-	DeleteDownloadTask(ctx context.Context, taskID uint64) error
+	DeleteDownloadTask(ctx context.Context, id uint64) error
 	WithDatabase(database Database) DownloadTaskDataAccessor
 }
 
@@ -57,11 +60,7 @@ func NewDownloadTaskDataAccessor(database *goqu.Database, logger *zap.Logger) Do
 func (d downloadTaskDataAccessor) CreateDownloadTask(ctx context.Context, task DownloadTask) (uint64, error) {
 	logger := utils.LoggerWithContext(ctx, d.logger).With(zap.Any("task", task))
 
-	result, err := d.database.
-		Insert(TabNameDownloadTasks).
-		Rows(task).
-		Executor().
-		ExecContext(ctx)
+	result, err := d.database.Insert(TabNameDownloadTasks).Rows(task).Executor().ExecContext(ctx)
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to create download task")
 		return 0, status.Error(codes.Internal, "failed to create download task")
@@ -113,14 +112,14 @@ func (d downloadTaskDataAccessor) GetDownloadTaskCountOfAccount(ctx context.Cont
 	return uint64(count), nil
 }	
 
-func (d downloadTaskDataAccessor) GetDownloadTask(ctx context.Context, taskID uint64) (DownloadTask, error) {
-	logger := utils.LoggerWithContext(ctx, d.logger).With(zap.Uint64("task ID", taskID))
-
+func (d downloadTaskDataAccessor) GetDownloadTask(ctx context.Context, id uint64) (DownloadTask, error) {
+	logger := utils.LoggerWithContext(ctx, d.logger).With(zap.Uint64("id", id))
 	downloadTask := DownloadTask{}
+	
 	found, err := d.database.
 		Select().
 		From(TabNameDownloadTasks).
-		Where(goqu.Ex{ColNameDownloadTaskID: taskID}).
+		Where(goqu.Ex{ColNameDownloadTaskID: id}).
 		ScanStructContext(ctx, &downloadTask)
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to get download task")
@@ -135,19 +134,19 @@ func (d downloadTaskDataAccessor) GetDownloadTask(ctx context.Context, taskID ui
 	return downloadTask, nil
 }
 
-func (d downloadTaskDataAccessor) GetDownloadTaskWithXLock(ctx context.Context, taskID uint64) (DownloadTask, error) {
+func (d downloadTaskDataAccessor) GetDownloadTaskWithXLock(ctx context.Context, id uint64) (DownloadTask, error) {
 	logger := utils.LoggerWithContext(ctx, d.logger).With(zap.Uint64("id", id))
-
 	downloadTask := DownloadTask{}
+
 	found, err := d.database.
 		Select().
 		From(TabNameDownloadTasks).
-		Where(goqu.Ex{ColNameDownloadTaskID: taskID}).
+		Where(goqu.Ex{ColNameDownloadTaskID: id}).
 		ForUpdate(goqu.Wait).
 		ScanStructContext(ctx, &downloadTask)
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to get download task")
-		return DownloadTask{}, status..Error(codes.Internal, "failed to get download task")
+		return DownloadTask{}, status.Error(codes.Internal, "failed to get download task")
 	}
 
 	if !found {
@@ -174,12 +173,12 @@ func (d downloadTaskDataAccessor) UpdateDownloadTask(ctx context.Context, task D
 	return nil
 }
 
-func (d downloadTaskDataAccessor) DeleteDownloadTask(ctx context.Context, taskID uint64) error {
-	logger := utils.LoggerWithContext(ctx, d.logger).With(zap.Uint64("Task ID", taskID))
+func (d downloadTaskDataAccessor) DeleteDownloadTask(ctx context.Context, id uint64) error {
+	logger := utils.LoggerWithContext(ctx, d.logger).With(zap.Uint64("id", id))
 
 	if _, err := d.database.
 		Delete(TabNameDownloadTasks).
-		Where(goqu.Ex{ColNameDownloadTaskID: taskID}).
+		Where(goqu.Ex{ColNameDownloadTaskID: id}).
 		Executor().
 		ExecContext(ctx); err != nil {
 		logger.With(zap.Error(err)).Error("failed to delete download task")

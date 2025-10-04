@@ -4,9 +4,13 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/doug-martin/goqu/v9"
-	"github.com/haiyen11231/Internet-download-manager/internal/utils"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
+	"github.com/doug-martin/goqu/v9"
+
+	"github.com/haiyen11231/Internet-download-manager/internal/utils"
 )
 
 var (
@@ -14,12 +18,12 @@ var (
 )
 
 const (
-	ColNameTokenPublicKeysID        = "key_id"
+	ColNameTokenPublicKeysID        = "id"
 	ColNameTokenPublicKeysPublicKey = "public_key"
 )
 
 type TokenPublicKey struct {
-	KeyID     uint64 `db:"key_id" goqu:"skipinsert,skipupdate"`
+	KeyID     uint64 `db:"id" goqu:"skipinsert,skipupdate"`
 	PublicKey string `db:"public_key"`
 }
 
@@ -43,6 +47,7 @@ func NewTokenPublicKeyDataAccessor(database *goqu.Database, logger *zap.Logger) 
 
 func (t tokenPublicKeyDataAccessor) CreatePublicKey(ctx context.Context, tokenPublicKey TokenPublicKey) (uint64, error) {
 	logger := utils.LoggerWithContext(ctx, t.logger)
+	
 	result, err := t.database.Insert(TabNameTokenPublicKeys).Rows(goqu.Record{
 		ColNameTokenPublicKeysPublicKey: tokenPublicKey.PublicKey,
 	}).Executor().ExecContext(ctx)
@@ -50,18 +55,20 @@ func (t tokenPublicKeyDataAccessor) CreatePublicKey(ctx context.Context, tokenPu
 		logger.With(zap.Error(err)).Error("failed to create token public key")
 		return 0, status.Error(codes.Internal, "failed to create token public key")
 	}
-	id, err := result.LastInsertId()
+
+	lastInsertedID, err := result.LastInsertId()
 	if err != nil {
-		logger.With(zap.Error(err)).Error("failed to get last insert id")
-		return 0, status.Error(codes.Internal, "failed to get last insert id")
+		logger.With(zap.Error(err)).Error("failed to get last inserted id")
+		return 0, status.Error(codes.Internal, "failed to get last inserted id")
 	}
-	return uint64(id), nil
+	
+	return uint64(lastInsertedID), nil
 }
 
 func (t tokenPublicKeyDataAccessor) GetPublicKey(ctx context.Context, id uint64) (TokenPublicKey, error) {
 	logger := utils.LoggerWithContext(ctx, t.logger).With(zap.Uint64("id", id))
-
 	tokenPublicKey := TokenPublicKey{}
+	
 	found, err := t.database.Select().From(TabNameTokenPublicKeys).Where(goqu.Ex{
 		ColNameTokenPublicKeysID: id,
 	}).Executor().ScanStructContext(ctx, &tokenPublicKey)

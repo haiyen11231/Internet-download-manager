@@ -4,28 +4,31 @@ import (
 	"context"
 
 	"github.com/doug-martin/goqu/v9"
-	"github.com/haiyen11231/Internet-download-manager/internal/utils"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
+	"github.com/haiyen11231/Internet-download-manager/internal/utils"
 )
 
 var (
-	TabNameAccounts = goqu.T("accounts")
+	TabNameAccounts   = goqu.T("accounts")
 	ErrAccountNotFound = status.Error(codes.NotFound, "account not found")
 )
 
 const (
-	ColNameAccountsID 	 = "account_id"
+	ColNameAccountsID 	 = "id"
 	ColNameAccountsAccountName    = "account_name"
 )
 
 type Account struct {
-	AccountID   uint64 `db:"account_id" goqu:"skipinsert,skipupdate"`
+	ID   uint64 `db:"id" goqu:"skipinsert,skipupdate"`
 	AccountName string `db:"account_name"`
 }
 
 type AccountDataAccessor interface {
 	CreateAccount(ctx context.Context, account Account) (uint64, error)
-	GetAccountByID(ctx context.Context, accountID uint64) (Account, error)
+	GetAccountByID(ctx context.Context, id uint64) (Account, error)
 	GetAccountByAccountName(ctx context.Context, accountName string) (Account, error)
 	// cai dat transaction - Query password that bai -> cac queries khacs phai revert lai -> cac queris cung thanh cong/cung that bai
 	WithDatabase(database Database) AccountDataAccessor
@@ -52,26 +55,26 @@ func (a accountDataAccessor) CreateAccount(ctx context.Context, account Account)
 	result, err := a.database.Insert(TabNameAccounts).Rows(goqu.Record{
 		ColNameAccountsAccountName: account.AccountName,
 	}).Executor().ExecContext(ctx)
-
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to create account")
 		return 0, status.Error(codes.Internal, "failed to create account")
 	}
 
-	id, err := result.LastInsertId()
+	lastInsertedID, err := result.LastInsertId()
 	if err != nil {
-		logger.With(zap.Error(err)).Error("failed to get last insert id after creating account")
-		return 0, status.Error(codes.Internal, "failed to get last insert id")
+		logger.With(zap.Error(err)).Error("failed to get last inserted id")
+		return 0, status.Error(codes.Internal, "failed to get last inserted id")
 	}
 
-	return uint64(id), nil
+	return uint64(lastInsertedID), nil
 }
 
-func (a accountDataAccessor) GetAccountByID(ctx context.Context, accountID uint64) (Account, error) {
+func (a accountDataAccessor) GetAccountByID(ctx context.Context, id uint64) (Account, error) {
 	// implement get account by id in db
 	logger := utils.LoggerWithContext(ctx, a.logger)
 	account := Account{}
-	found, err := a.database.From(TabNameAccounts).Where(goqu.C(ColNameAccountsID).Eq(accountID)).ScanStructContext(ctx, &account)
+
+	found, err := a.database.From(TabNameAccounts).Where(goqu.C(ColNameAccountsID).Eq(id)).ScanStructContext(ctx, &account)
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to get account by id")
 		return Account{}, status.Error(codes.Internal, "failed to get account by id")
@@ -88,6 +91,7 @@ func (a accountDataAccessor) GetAccountByID(ctx context.Context, accountID uint6
 func (a accountDataAccessor) GetAccountByAccountName(ctx context.Context, accountName string) (Account, error) {
 	logger := utils.LoggerWithContext(ctx, a.logger).With(zap.String("account_name", accountName))
 	account := Account{}
+	
 	found, err := a.database.From(TabNameAccounts).Where(goqu.C(ColNameAccountsAccountName).Eq(accountName)).ScanStructContext(ctx, &account)
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to get account by account name")
@@ -99,7 +103,7 @@ func (a accountDataAccessor) GetAccountByAccountName(ctx context.Context, accoun
 		return Account{}, ErrAccountNotFound
 	}
 	// implement get account by username in db
-	return Account{}, nil
+	return account, nil
 }
 
 // why? khi thay the db cua minh bang transaction db thi van nhan dc doi tuong AccountDataAccessor -> nhung func con lai van dc cai dat dua tren database interface cua minh thay vi dua tren 
