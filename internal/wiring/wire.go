@@ -7,6 +7,7 @@ package wiring
 
 import (
 	"github.com/google/wire"
+
 	"github.com/haiyen11231/Internet-download-manager/internal/app"
 	"github.com/haiyen11231/Internet-download-manager/internal/configs"
 	"github.com/haiyen11231/Internet-download-manager/internal/data_access"
