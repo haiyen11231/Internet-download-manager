@@ -75,7 +75,7 @@ func pemEncodePublicKey(pubKey *rsa.PublicKey) ([]byte, error) {
 }
 
 func NewToken(accountDataAccessor database.AccountDataAccessor, tokenPublicKeyCache cache.TokenPublicKey, tokenPublicKeyDataAccessor database.TokenPublicKeyDataAccessor, authConfig configs.Auth, logger *zap.Logger) (Token, error) {
-	expiresIn, err := authConfig.Token.GetExpiresInDuration()
+	expiresIn, err := authConfig.Token.GetExpireInDuration()
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to parse expires_in")
 		return nil, err

@@ -86,14 +86,14 @@ func NewDownloadTask(
 
 func (d downloadTask) databaseDownloadTaskToProtoDownloadTask(downloadTask database.DownloadTask, account database.Account) *go_load.DownloadTask {
 	return &go_load.DownloadTask{
-		Id:        downloadTask.ID,
+		Id:        downloadTask.TaskID,
 		OfAccount: &go_load.Account{
 			Id:          account.ID,
 			AccountName: account.AccountName,
 		},
 		DownloadType:   downloadTask.DownloadType,
-		Url:            downloadTask.URL,
-		DownloadStatus: go_load.DownloadStatus_Pending,
+		FileUrl:            downloadTask.FileURL,
+		DownloadStatus: go_load.DownloadStatus_DOWNLOAD_STATUS_PENDING,
 	}
 }
 
@@ -111,8 +111,8 @@ func (d downloadTask) CreateDownloadTask(ctx context.Context, params CreateDownl
 	downloadTask := database.DownloadTask{
 		OfAccountID:    accountID,
 		DownloadType:   params.DownloadType,
-		URL:            params.URL,
-		DownloadStatus: go_load.DownloadStatus_Pending,
+		FileURL:            params.URL,
+		DownloadStatus: go_load.DownloadStatus_DOWNLOAD_STATUS_PENDING,
 		Metadata: database.JSON{
 			Data: make(map[string]any),
 		},
@@ -126,7 +126,7 @@ func (d downloadTask) CreateDownloadTask(ctx context.Context, params CreateDownl
 			return createDownloadTaskErr
 		}
 
-		downloadTask.ID = downloadTaskID
+		downloadTask.TaskID = downloadTaskID
 		produceErr := d.downloadTaskCreatedProducer.Produce(ctx, producer.DownloadTaskCreated{
 			ID: downloadTaskID,
 		})
@@ -198,7 +198,7 @@ func (d downloadTask) UpdateDownloadTask(ctx context.Context, params UpdateDownl
 			return status.Error(codes.PermissionDenied, "trying to update a download task the account does not own")
 		}
 
-		downloadTask.URL = params.URL
+		downloadTask.FileURL = params.URL
 		output.DownloadTask = d.databaseDownloadTaskToProtoDownloadTask(downloadTask, account)
 		return d.downloadTaskDataAccessor.WithDatabase(td).UpdateDownloadTask(ctx, downloadTask)
 	})

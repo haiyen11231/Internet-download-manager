@@ -19,7 +19,7 @@ const (
 	flagConfigFilePath = "config-file-path"
 )
 
-func serve() *cobra.Command {
+func server() *cobra.Command {
 	command := &cobra.Command{
 		Use: "server",
 		RunE: func(cmd *cobra.Command, args []string) error {

@@ -29,7 +29,7 @@ func NewConfig(filePath ConfigFilePath) (Config, error) {
 	)
 
 	if filePath != "" {
-		configBytes, err := os.ReadFile(string(filePath))
+		configBytes, err = os.ReadFile(string(filePath))
 		if err != nil {
 			return Config{}, fmt.Errorf("failed to read YAML file: %w", err)
 		}

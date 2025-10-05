@@ -8,10 +8,11 @@ import (
 
 	"github.com/doug-martin/goqu/v9"
 	"go.uber.org/zap"
+
 	// Register MySQL dialect and driver
 	_ "github.com/doug-martin/goqu/v9/dialect/mysql"
 	_ "github.com/go-sql-driver/mysql"
-	
+
 	"github.com/haiyen11231/Internet-download-manager/internal/configs"
 )
 
@@ -44,7 +45,7 @@ type Database interface {
 }
 
 // return sql.db de cam tu ben ngoai va tuong tac db
-func InitializeAndMigrateUpDB(databaseConfig configs.Database, logger *zap.Logger) (db *sql.DB, func(), err error) {
+func InitializeAndMigrateUpDB(databaseConfig configs.Database, logger *zap.Logger) (*sql.DB, func(), error) {
 	// Construct connection string
 	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true",
 		databaseConfig.Username,

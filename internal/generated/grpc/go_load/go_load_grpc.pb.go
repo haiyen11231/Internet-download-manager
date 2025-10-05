@@ -16,7 +16,7 @@ import (
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
 // Requires gRPC-Go v1.64.0 or later.
-const _ = grpc.SupportPackageIsVersion9
+const _ = grpc.SupportPackageIsVersion7
 
 const (
 	GoLoadService_CreateAccount_FullMethodName       = "/go_load.GoLoadService/CreateAccount"
@@ -38,7 +38,7 @@ type GoLoadServiceClient interface {
 	GetDownloadTaskList(ctx context.Context, in *GetDownloadTaskListRequest, opts ...grpc.CallOption) (*GetDownloadTaskListResponse, error)
 	UpdateDownloadTask(ctx context.Context, in *UpdateDownloadTaskRequest, opts ...grpc.CallOption) (*UpdateDownloadTaskResponse, error)
 	DeleteDownloadTask(ctx context.Context, in *DeleteDownloadTaskRequest, opts ...grpc.CallOption) (*DeleteDownloadTaskResponse, error)
-	GetDownloadTaskFile(ctx context.Context, in *GetDownloadTaskFileRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[GetDownloadTaskFileResponse], error)
+	GetDownloadTaskFile(ctx context.Context, in *GetDownloadTaskFileRequest, opts ...grpc.CallOption) (GoLoadService_GetDownloadTaskFileClient, error)
 }
 
 type goLoadServiceClient struct {
@@ -109,13 +109,13 @@ func (c *goLoadServiceClient) DeleteDownloadTask(ctx context.Context, in *Delete
 	return out, nil
 }
 
-func (c *goLoadServiceClient) GetDownloadTaskFile(ctx context.Context, in *GetDownloadTaskFileRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[GetDownloadTaskFileResponse], error) {
+func (c *goLoadServiceClient) GetDownloadTaskFile(ctx context.Context, in *GetDownloadTaskFileRequest, opts ...grpc.CallOption) (GoLoadService_GetDownloadTaskFileClient, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &GoLoadService_ServiceDesc.Streams[0], GoLoadService_GetDownloadTaskFile_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[GetDownloadTaskFileRequest, GetDownloadTaskFileResponse]{ClientStream: stream}
+	x := &goLoadServiceGetDownloadTaskFileClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -125,8 +125,25 @@ func (c *goLoadServiceClient) GetDownloadTaskFile(ctx context.Context, in *GetDo
 	return x, nil
 }
 
+type GoLoadService_GetDownloadTaskFileClient interface {
+	Recv() (*GetDownloadTaskFileResponse, error)
+	grpc.ClientStream
+}
+
+type goLoadServiceGetDownloadTaskFileClient struct {
+	grpc.ClientStream
+}
+
+func (x *goLoadServiceGetDownloadTaskFileClient) Recv() (*GetDownloadTaskFileResponse, error) {
+	m := new(GetDownloadTaskFileResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type GoLoadService_GetDownloadTaskFileClient = grpc.ServerStreamingClient[GetDownloadTaskFileResponse]
+// type GoLoadService_GetDownloadTaskFileClient = grpc.ServerStreamingClient[GetDownloadTaskFileResponse]
 
 // GoLoadServiceServer is the server API for GoLoadService service.
 // All implementations must embed UnimplementedGoLoadServiceServer
@@ -138,7 +155,7 @@ type GoLoadServiceServer interface {
 	GetDownloadTaskList(context.Context, *GetDownloadTaskListRequest) (*GetDownloadTaskListResponse, error)
 	UpdateDownloadTask(context.Context, *UpdateDownloadTaskRequest) (*UpdateDownloadTaskResponse, error)
 	DeleteDownloadTask(context.Context, *DeleteDownloadTaskRequest) (*DeleteDownloadTaskResponse, error)
-	GetDownloadTaskFile(*GetDownloadTaskFileRequest, grpc.ServerStreamingServer[GetDownloadTaskFileResponse]) error
+	GetDownloadTaskFile(*GetDownloadTaskFileRequest, GoLoadService_GetDownloadTaskFileServer) error
 	mustEmbedUnimplementedGoLoadServiceServer()
 }
 
@@ -167,7 +184,7 @@ func (UnimplementedGoLoadServiceServer) UpdateDownloadTask(context.Context, *Upd
 func (UnimplementedGoLoadServiceServer) DeleteDownloadTask(context.Context, *DeleteDownloadTaskRequest) (*DeleteDownloadTaskResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteDownloadTask not implemented")
 }
-func (UnimplementedGoLoadServiceServer) GetDownloadTaskFile(*GetDownloadTaskFileRequest, grpc.ServerStreamingServer[GetDownloadTaskFileResponse]) error {
+func (UnimplementedGoLoadServiceServer) GetDownloadTaskFile(*GetDownloadTaskFileRequest, GoLoadService_GetDownloadTaskFileServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetDownloadTaskFile not implemented")
 }
 func (UnimplementedGoLoadServiceServer) mustEmbedUnimplementedGoLoadServiceServer() {}
@@ -304,11 +321,24 @@ func _GoLoadService_GetDownloadTaskFile_Handler(srv interface{}, stream grpc.Ser
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(GoLoadServiceServer).GetDownloadTaskFile(m, &grpc.GenericServerStream[GetDownloadTaskFileRequest, GetDownloadTaskFileResponse]{ServerStream: stream})
+	return srv.(GoLoadServiceServer).GetDownloadTaskFile(m, &goLoadServiceGetDownloadTaskFileServer{stream})
+}
+
+type GoLoadService_GetDownloadTaskFileServer interface {
+	Send(*GetDownloadTaskFileResponse) error
+	grpc.ServerStream
+}
+
+type goLoadServiceGetDownloadTaskFileServer struct {
+	grpc.ServerStream
+}
+
+func (x *goLoadServiceGetDownloadTaskFileServer) Send(m *GetDownloadTaskFileResponse) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type GoLoadService_GetDownloadTaskFileServer = grpc.ServerStreamingServer[GetDownloadTaskFileResponse]
+// type GoLoadService_GetDownloadTaskFileServer = grpc.ServerStreamingServer[GetDownloadTaskFileResponse]
 
 // GoLoadService_ServiceDesc is the grpc.ServiceDesc for GoLoadService service.
 // It's only intended for direct use with grpc.RegisterService,

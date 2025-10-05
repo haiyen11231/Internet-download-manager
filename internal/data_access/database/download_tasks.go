@@ -27,7 +27,7 @@ const (
 
 type DownloadTask struct {
 	TaskID         uint64 `db:"id" goqu:"skipinsert,skipupdate"`
-	AccountID      uint64 `db:"of_account_id" goqu:"skipinsert,skipupdate"`
+	OfAccountID      uint64 `db:"of_account_id" goqu:"skipinsert,skipupdate"`
 	DownloadType   go_load.DownloadType `db:"download_type"`
 	FileURL        string                `db:"file_url"`
 	DownloadStatus go_load.DownloadStatus `db:"download_status"`
@@ -163,7 +163,7 @@ func (d downloadTaskDataAccessor) UpdateDownloadTask(ctx context.Context, task D
 	if _, err := d.database.
 		Update(TabNameDownloadTasks).
 		Set(task).
-		Where(goqu.Ex{ColNameDownloadTaskID: task.ID}).
+		Where(goqu.Ex{ColNameDownloadTaskID: task.TaskID}).
 		Executor().
 		ExecContext(ctx); err != nil {
 		logger.With(zap.Error(err)).Error("failed to update download task")

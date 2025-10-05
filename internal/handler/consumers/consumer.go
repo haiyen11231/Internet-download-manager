@@ -38,7 +38,7 @@ func (r root) Start(ctx context.Context) error {
 			}
 
 			return r.downloadTaskCreatedHandler.Handle(ctx, event)
-		}
+		},
 	)
 	
 	return r.mqConsumer.Start(ctx)

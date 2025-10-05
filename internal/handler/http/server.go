@@ -44,7 +44,7 @@ func NewServer(grpcConfig configs.GRPC, httpConfig configs.HTTP, authConfig conf
 
 // grpc gw thiet lap server http, server nay se bien doi het cac req tu json sang grpc, roi forward den dia chi (0.0.0.0:8080) grpc server
 func (s server) getGRPCGatewayHandler(ctx context.Context) (http.Handler, error) {
-	tokenExpiresInDuration, err := s.authConfig.Token.GetExpiresInDuration()
+	tokenExpiresInDuration, err := s.authConfig.Token.GetExpireInDuration()
 	if err != nil {
 		return nil, err
 	}

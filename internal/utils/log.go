@@ -44,5 +44,5 @@ func InitializeLogger(logConfig configs.Log) (*zap.Logger, func(), error) {
 
 func LoggerWithContext(_ context.Context, logger *zap.Logger) *zap.Logger {
 	//TODO: Add request ID to context
-	return Logger
+	return logger
 }
