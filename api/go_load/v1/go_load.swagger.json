@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "api/go_load.proto",
+    "title": "go_load/v1/go_load.proto",
     "version": "version not set"
   },
   "tags": [
@@ -16,14 +16,14 @@
     "application/json"
   ],
   "paths": {
-    "/go_load.GoLoadService/CreateAccount": {
+    "/go_load.v1.GoLoadService/CreateAccount": {
       "post": {
         "operationId": "GoLoadService_CreateAccount",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/go_loadCreateAccountResponse"
+              "$ref": "#/definitions/v1CreateAccountResponse"
             }
           },
           "default": {
@@ -39,7 +39,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/go_loadCreateAccountRequest"
+              "$ref": "#/definitions/v1CreateAccountRequest"
             }
           }
         ],
@@ -48,14 +48,14 @@
         ]
       }
     },
-    "/go_load.GoLoadService/CreateDownloadTask": {
+    "/go_load.v1.GoLoadService/CreateDownloadTask": {
       "post": {
         "operationId": "GoLoadService_CreateDownloadTask",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/go_loadCreateDownloadTaskResponse"
+              "$ref": "#/definitions/v1CreateDownloadTaskResponse"
             }
           },
           "default": {
@@ -71,7 +71,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/go_loadCreateDownloadTaskRequest"
+              "$ref": "#/definitions/v1CreateDownloadTaskRequest"
             }
           }
         ],
@@ -80,7 +80,7 @@
         ]
       }
     },
-    "/go_load.GoLoadService/CreateSession": {
+    "/go_load.v1.GoLoadService/CreateSession": {
       "post": {
         "summary": "Create a client-side session when user logs in -- returns a token for further requests",
         "operationId": "GoLoadService_CreateSession",
@@ -88,7 +88,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/go_loadCreateSessionResponse"
+              "$ref": "#/definitions/v1CreateSessionResponse"
             }
           },
           "default": {
@@ -104,7 +104,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/go_loadCreateSessionRequest"
+              "$ref": "#/definitions/v1CreateSessionRequest"
             }
           }
         ],
@@ -113,14 +113,14 @@
         ]
       }
     },
-    "/go_load.GoLoadService/DeleteDownloadTask": {
+    "/go_load.v1.GoLoadService/DeleteDownloadTask": {
       "post": {
         "operationId": "GoLoadService_DeleteDownloadTask",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/go_loadDeleteDownloadTaskResponse"
+              "$ref": "#/definitions/v1DeleteDownloadTaskResponse"
             }
           },
           "default": {
@@ -136,7 +136,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/go_loadDeleteDownloadTaskRequest"
+              "$ref": "#/definitions/v1DeleteDownloadTaskRequest"
             }
           }
         ],
@@ -145,7 +145,7 @@
         ]
       }
     },
-    "/go_load.GoLoadService/GetDownloadTaskFile": {
+    "/go_load.v1.GoLoadService/GetDownloadTaskFile": {
       "post": {
         "operationId": "GoLoadService_GetDownloadTaskFile",
         "responses": {
@@ -155,13 +155,13 @@
               "type": "object",
               "properties": {
                 "result": {
-                  "$ref": "#/definitions/go_loadGetDownloadTaskFileResponse"
+                  "$ref": "#/definitions/v1GetDownloadTaskFileResponse"
                 },
                 "error": {
                   "$ref": "#/definitions/rpcStatus"
                 }
               },
-              "title": "Stream result of go_loadGetDownloadTaskFileResponse"
+              "title": "Stream result of v1GetDownloadTaskFileResponse"
             }
           },
           "default": {
@@ -177,7 +177,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/go_loadGetDownloadTaskFileRequest"
+              "$ref": "#/definitions/v1GetDownloadTaskFileRequest"
             }
           }
         ],
@@ -186,14 +186,14 @@
         ]
       }
     },
-    "/go_load.GoLoadService/GetDownloadTaskList": {
+    "/go_load.v1.GoLoadService/GetDownloadTaskList": {
       "post": {
         "operationId": "GoLoadService_GetDownloadTaskList",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/go_loadGetDownloadTaskListResponse"
+              "$ref": "#/definitions/v1GetDownloadTaskListResponse"
             }
           },
           "default": {
@@ -209,7 +209,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/go_loadGetDownloadTaskListRequest"
+              "$ref": "#/definitions/v1GetDownloadTaskListRequest"
             }
           }
         ],
@@ -218,7 +218,7 @@
         ]
       }
     },
-    "/go_load.GoLoadService/UpdateDownloadTask": {
+    "/go_load.v1.GoLoadService/UpdateDownloadTask": {
       "post": {
         "summary": "Update only when in PENDING status",
         "operationId": "GoLoadService_UpdateDownloadTask",
@@ -226,7 +226,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/go_loadUpdateDownloadTaskResponse"
+              "$ref": "#/definitions/v1UpdateDownloadTaskResponse"
             }
           },
           "default": {
@@ -242,7 +242,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/go_loadUpdateDownloadTaskRequest"
+              "$ref": "#/definitions/v1UpdateDownloadTaskRequest"
             }
           }
         ],
@@ -253,196 +253,6 @@
     }
   },
   "definitions": {
-    "go_loadAccount": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "accountName": {
-          "type": "string"
-        }
-      }
-    },
-    "go_loadCreateAccountRequest": {
-      "type": "object",
-      "properties": {
-        "accountName": {
-          "type": "string"
-        },
-        "password": {
-          "type": "string"
-        }
-      }
-    },
-    "go_loadCreateAccountResponse": {
-      "type": "object",
-      "properties": {
-        "accountId": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
-    "go_loadCreateDownloadTaskRequest": {
-      "type": "object",
-      "properties": {
-        "downloadType": {
-          "$ref": "#/definitions/go_loadDownloadType"
-        },
-        "fileUrl": {
-          "type": "string"
-        }
-      }
-    },
-    "go_loadCreateDownloadTaskResponse": {
-      "type": "object",
-      "properties": {
-        "downloadTask": {
-          "$ref": "#/definitions/go_loadDownloadTask"
-        }
-      }
-    },
-    "go_loadCreateSessionRequest": {
-      "type": "object",
-      "properties": {
-        "accountName": {
-          "type": "string"
-        },
-        "password": {
-          "type": "string"
-        }
-      }
-    },
-    "go_loadCreateSessionResponse": {
-      "type": "object",
-      "properties": {
-        "account": {
-          "$ref": "#/definitions/go_loadAccount"
-        }
-      }
-    },
-    "go_loadDeleteDownloadTaskRequest": {
-      "type": "object",
-      "properties": {
-        "downloadTaskId": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
-    "go_loadDeleteDownloadTaskResponse": {
-      "type": "object"
-    },
-    "go_loadDownloadStatus": {
-      "type": "string",
-      "enum": [
-        "DOWNLOAD_STATUS_UNDEFINED",
-        "DOWNLOAD_STATUS_PENDING",
-        "DOWNLOAD_STATUS_DOWNLOADING",
-        "DOWNLOAD_STATUS_FAILED",
-        "DOWNLOAD_STATUS_SUCCESS"
-      ],
-      "default": "DOWNLOAD_STATUS_UNDEFINED"
-    },
-    "go_loadDownloadTask": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "ofAccount": {
-          "$ref": "#/definitions/go_loadAccount"
-        },
-        "downloadType": {
-          "$ref": "#/definitions/go_loadDownloadType"
-        },
-        "fileUrl": {
-          "type": "string"
-        },
-        "downloadStatus": {
-          "$ref": "#/definitions/go_loadDownloadStatus"
-        }
-      }
-    },
-    "go_loadDownloadType": {
-      "type": "string",
-      "enum": [
-        "DOWNLOAD_TYPE_UNDEFINED",
-        "DOWNLOAD_TYPE_HTTP"
-      ],
-      "default": "DOWNLOAD_TYPE_UNDEFINED",
-      "title": "- DOWNLOAD_TYPE_HTTP: Download via HTTP"
-    },
-    "go_loadGetDownloadTaskFileRequest": {
-      "type": "object",
-      "properties": {
-        "downloadTaskId": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
-    "go_loadGetDownloadTaskFileResponse": {
-      "type": "object",
-      "properties": {
-        "fileContent": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "go_loadGetDownloadTaskListRequest": {
-      "type": "object",
-      "properties": {
-        "offset": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "limit": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
-    "go_loadGetDownloadTaskListResponse": {
-      "type": "object",
-      "properties": {
-        "downloadTaskList": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/go_loadDownloadTask"
-          }
-        },
-        "totalDownloadTaskCount": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
-    "go_loadUpdateDownloadTaskRequest": {
-      "type": "object",
-      "properties": {
-        "downloadTaskId": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "fileUrl": {
-          "type": "string"
-        }
-      }
-    },
-    "go_loadUpdateDownloadTaskResponse": {
-      "type": "object",
-      "properties": {
-        "downloadTask": {
-          "$ref": "#/definitions/go_loadDownloadTask"
-        }
-      }
-    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -468,6 +278,196 @@
             "type": "object",
             "$ref": "#/definitions/protobufAny"
           }
+        }
+      }
+    },
+    "v1Account": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "accountName": {
+          "type": "string"
+        }
+      }
+    },
+    "v1CreateAccountRequest": {
+      "type": "object",
+      "properties": {
+        "accountName": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "v1CreateAccountResponse": {
+      "type": "object",
+      "properties": {
+        "accountId": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "v1CreateDownloadTaskRequest": {
+      "type": "object",
+      "properties": {
+        "downloadType": {
+          "$ref": "#/definitions/v1DownloadType"
+        },
+        "fileUrl": {
+          "type": "string"
+        }
+      }
+    },
+    "v1CreateDownloadTaskResponse": {
+      "type": "object",
+      "properties": {
+        "downloadTask": {
+          "$ref": "#/definitions/v1DownloadTask"
+        }
+      }
+    },
+    "v1CreateSessionRequest": {
+      "type": "object",
+      "properties": {
+        "accountName": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "v1CreateSessionResponse": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "$ref": "#/definitions/v1Account"
+        }
+      }
+    },
+    "v1DeleteDownloadTaskRequest": {
+      "type": "object",
+      "properties": {
+        "downloadTaskId": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "v1DeleteDownloadTaskResponse": {
+      "type": "object"
+    },
+    "v1DownloadStatus": {
+      "type": "string",
+      "enum": [
+        "DOWNLOAD_STATUS_UNDEFINED",
+        "DOWNLOAD_STATUS_PENDING",
+        "DOWNLOAD_STATUS_DOWNLOADING",
+        "DOWNLOAD_STATUS_FAILED",
+        "DOWNLOAD_STATUS_SUCCESS"
+      ],
+      "default": "DOWNLOAD_STATUS_UNDEFINED"
+    },
+    "v1DownloadTask": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "ofAccount": {
+          "$ref": "#/definitions/v1Account"
+        },
+        "downloadType": {
+          "$ref": "#/definitions/v1DownloadType"
+        },
+        "fileUrl": {
+          "type": "string"
+        },
+        "downloadStatus": {
+          "$ref": "#/definitions/v1DownloadStatus"
+        }
+      }
+    },
+    "v1DownloadType": {
+      "type": "string",
+      "enum": [
+        "DOWNLOAD_TYPE_UNDEFINED",
+        "DOWNLOAD_TYPE_HTTP"
+      ],
+      "default": "DOWNLOAD_TYPE_UNDEFINED",
+      "title": "- DOWNLOAD_TYPE_HTTP: Download via HTTP"
+    },
+    "v1GetDownloadTaskFileRequest": {
+      "type": "object",
+      "properties": {
+        "downloadTaskId": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "v1GetDownloadTaskFileResponse": {
+      "type": "object",
+      "properties": {
+        "fileContent": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "v1GetDownloadTaskListRequest": {
+      "type": "object",
+      "properties": {
+        "offset": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "limit": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "v1GetDownloadTaskListResponse": {
+      "type": "object",
+      "properties": {
+        "downloadTaskList": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1DownloadTask"
+          }
+        },
+        "totalDownloadTaskCount": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "v1UpdateDownloadTaskRequest": {
+      "type": "object",
+      "properties": {
+        "downloadTaskId": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "fileUrl": {
+          "type": "string"
+        }
+      }
+    },
+    "v1UpdateDownloadTaskResponse": {
+      "type": "object",
+      "properties": {
+        "downloadTask": {
+          "$ref": "#/definitions/v1DownloadTask"
         }
       }
     }

@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/haiyen11231/Internet-download-manager/internal/configs"
-	"github.com/haiyen11231/Internet-download-manager/internal/generated/grpc/go_load"
+	go_load "github.com/haiyen11231/Internet-download-manager/internal/generated/go_load/v1"
 	handlerGRPC "github.com/haiyen11231/Internet-download-manager/internal/handler/grpc"
 	"github.com/haiyen11231/Internet-download-manager/internal/handler/http/servemuxoptions"
 	"github.com/haiyen11231/Internet-download-manager/internal/utils"

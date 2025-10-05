@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/haiyen11231/Internet-download-manager/internal/generated/grpc/go_load"
+	go_load "github.com/haiyen11231/Internet-download-manager/internal/generated/go_load/v1"
 	"github.com/haiyen11231/Internet-download-manager/internal/utils"
 )
 

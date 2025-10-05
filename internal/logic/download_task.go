@@ -11,7 +11,7 @@ import (
 
 	"github.com/haiyen11231/Internet-download-manager/internal/data_access/database"
 	"github.com/haiyen11231/Internet-download-manager/internal/data_access/mq/producer"
-	"github.com/haiyen11231/Internet-download-manager/internal/generated/grpc/go_load"
+	go_load "github.com/haiyen11231/Internet-download-manager/internal/generated/go_load/v1"
 )
 
 type CreateDownloadTaskParams struct {
@@ -93,7 +93,7 @@ func (d downloadTask) databaseDownloadTaskToProtoDownloadTask(downloadTask datab
 		},
 		DownloadType:   downloadTask.DownloadType,
 		FileUrl:            downloadTask.FileURL,
-		DownloadStatus: go_load.DownloadStatus_DOWNLOAD_STATUS_PENDING,
+		DownloadStatus: downloadTask.DownloadStatus,
 	}
 }
 
