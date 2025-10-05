@@ -28,10 +28,6 @@ type ProduceRequest struct {
 	records         map[string]map[int32]Records
 }
 
-func (r *ProduceRequest) setVersion(v int16) {
-	r.Version = v
-}
-
 func updateMsgSetMetrics(msgSet *MessageSet, compressionRatioMetric metrics.Histogram,
 	topicCompressionRatioMetric metrics.Histogram,
 ) int64 {
@@ -205,7 +201,7 @@ func (r *ProduceRequest) decode(pd packetDecoder, version int16) error {
 }
 
 func (r *ProduceRequest) key() int16 {
-	return apiKeyProduce
+	return 0
 }
 
 func (r *ProduceRequest) version() int16 {

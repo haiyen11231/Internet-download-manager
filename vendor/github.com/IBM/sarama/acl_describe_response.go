@@ -11,10 +11,6 @@ type DescribeAclsResponse struct {
 	ResourceAcls []*ResourceAcls
 }
 
-func (d *DescribeAclsResponse) setVersion(v int16) {
-	d.Version = v
-}
-
 func (d *DescribeAclsResponse) encode(pe packetEncoder) error {
 	pe.putInt32(int32(d.ThrottleTime / time.Millisecond))
 	pe.putInt16(int16(d.Err))
@@ -74,7 +70,7 @@ func (d *DescribeAclsResponse) decode(pd packetDecoder, version int16) (err erro
 }
 
 func (d *DescribeAclsResponse) key() int16 {
-	return apiKeyDescribeAcls
+	return 29
 }
 
 func (d *DescribeAclsResponse) version() int16 {

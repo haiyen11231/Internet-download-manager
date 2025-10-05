@@ -6,10 +6,6 @@ type DescribeAclsRequest struct {
 	AclFilter
 }
 
-func (d *DescribeAclsRequest) setVersion(v int16) {
-	d.Version = int(v)
-}
-
 func (d *DescribeAclsRequest) encode(pe packetEncoder) error {
 	d.AclFilter.Version = d.Version
 	return d.AclFilter.encode(pe)
@@ -22,7 +18,7 @@ func (d *DescribeAclsRequest) decode(pd packetDecoder, version int16) (err error
 }
 
 func (d *DescribeAclsRequest) key() int16 {
-	return apiKeyDescribeAcls
+	return 29
 }
 
 func (d *DescribeAclsRequest) version() int16 {

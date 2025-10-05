@@ -9,10 +9,6 @@ type IncrementalAlterConfigsResponse struct {
 	Resources    []*AlterConfigsResourceResponse
 }
 
-func (a *IncrementalAlterConfigsResponse) setVersion(v int16) {
-	a.Version = v
-}
-
 func (a *IncrementalAlterConfigsResponse) encode(pe packetEncoder) error {
 	pe.putInt32(int32(a.ThrottleTime / time.Millisecond))
 
@@ -55,7 +51,7 @@ func (a *IncrementalAlterConfigsResponse) decode(pd packetDecoder, version int16
 }
 
 func (a *IncrementalAlterConfigsResponse) key() int16 {
-	return apiKeyIncrementalAlterConfigs
+	return 44
 }
 
 func (a *IncrementalAlterConfigsResponse) version() int16 {

@@ -11,10 +11,6 @@ type ApiVersionsRequest struct {
 	ClientSoftwareVersion string
 }
 
-func (r *ApiVersionsRequest) setVersion(v int16) {
-	r.Version = v
-}
-
 func (r *ApiVersionsRequest) encode(pe packetEncoder) (err error) {
 	if r.Version >= 3 {
 		if err := pe.putCompactString(r.ClientSoftwareName); err != nil {
@@ -47,7 +43,7 @@ func (r *ApiVersionsRequest) decode(pd packetDecoder, version int16) (err error)
 }
 
 func (r *ApiVersionsRequest) key() int16 {
-	return apiKeyApiVersions
+	return 18
 }
 
 func (r *ApiVersionsRequest) version() int16 {

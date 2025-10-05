@@ -89,10 +89,6 @@ type FetchRequest struct {
 	RackID string
 }
 
-func (r *FetchRequest) setVersion(v int16) {
-	r.Version = v
-}
-
 type IsolationLevel int8
 
 const (
@@ -273,7 +269,7 @@ func (r *FetchRequest) decode(pd packetDecoder, version int16) (err error) {
 }
 
 func (r *FetchRequest) key() int16 {
-	return apiKeyFetch
+	return 1
 }
 
 func (r *FetchRequest) version() int16 {

@@ -13,7 +13,7 @@ import (
 	"github.com/haiyen11231/Internet-download-manager/internal/configs"
 	"github.com/haiyen11231/Internet-download-manager/internal/generated/grpc/go_load"
 	handlerGRPC "github.com/haiyen11231/Internet-download-manager/internal/handler/grpc"
-	"github.com/haiyen11231/Internet-download-manager/internal/handler/servemuxoptions"
+	"github.com/haiyen11231/Internet-download-manager/internal/handler/http/servemuxoptions"
 	"github.com/haiyen11231/Internet-download-manager/internal/utils"
 )
 

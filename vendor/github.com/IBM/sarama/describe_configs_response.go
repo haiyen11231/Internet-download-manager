@@ -53,10 +53,6 @@ type DescribeConfigsResponse struct {
 	Resources    []*ResourceResponse
 }
 
-func (r *DescribeConfigsResponse) setVersion(v int16) {
-	r.Version = v
-}
-
 type ResourceResponse struct {
 	ErrorCode int16
 	ErrorMsg  string
@@ -122,7 +118,7 @@ func (r *DescribeConfigsResponse) decode(pd packetDecoder, version int16) (err e
 }
 
 func (r *DescribeConfigsResponse) key() int16 {
-	return apiKeyDescribeConfigs
+	return 32
 }
 
 func (r *DescribeConfigsResponse) version() int16 {

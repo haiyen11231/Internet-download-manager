@@ -15,10 +15,6 @@ type SyncGroupResponse struct {
 	MemberAssignment []byte
 }
 
-func (r *SyncGroupResponse) setVersion(v int16) {
-	r.Version = v
-}
-
 func (r *SyncGroupResponse) GetMemberAssignment() (*ConsumerGroupMemberAssignment, error) {
 	assignment := new(ConsumerGroupMemberAssignment)
 	err := decode(r.MemberAssignment, assignment, nil)
@@ -52,7 +48,7 @@ func (r *SyncGroupResponse) decode(pd packetDecoder, version int16) (err error) 
 }
 
 func (r *SyncGroupResponse) key() int16 {
-	return apiKeySyncGroup
+	return 14
 }
 
 func (r *SyncGroupResponse) version() int16 {

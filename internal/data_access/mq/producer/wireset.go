@@ -2,7 +2,7 @@ package producer
 
 import "github.com/google/wire"
 
-var Wire = wire.NewSet(
+var WireSet = wire.NewSet(
 	NewClient,
 	NewDownloadTaskCreatedProducer,
 )

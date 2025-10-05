@@ -15,10 +15,6 @@ type ConsumerMetadataResponse struct {
 	CoordinatorPort int32  // deprecated: use Coordinator.Addr()
 }
 
-func (r *ConsumerMetadataResponse) setVersion(v int16) {
-	r.Version = v
-}
-
 func (r *ConsumerMetadataResponse) decode(pd packetDecoder, version int16) (err error) {
 	tmp := new(FindCoordinatorResponse)
 
@@ -71,7 +67,7 @@ func (r *ConsumerMetadataResponse) encode(pe packetEncoder) error {
 }
 
 func (r *ConsumerMetadataResponse) key() int16 {
-	return apiKeyFindCoordinator
+	return 10
 }
 
 func (r *ConsumerMetadataResponse) version() int16 {

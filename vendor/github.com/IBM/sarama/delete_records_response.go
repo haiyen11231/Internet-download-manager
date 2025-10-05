@@ -1,7 +1,6 @@
 package sarama
 
 import (
-	"slices"
 	"sort"
 	"time"
 )
@@ -17,10 +16,6 @@ type DeleteRecordsResponse struct {
 	Version      int16
 	ThrottleTime time.Duration
 	Topics       map[string]*DeleteRecordsResponseTopic
-}
-
-func (d *DeleteRecordsResponse) setVersion(v int16) {
-	d.Version = v
 }
 
 func (d *DeleteRecordsResponse) encode(pe packetEncoder) error {
@@ -78,7 +73,7 @@ func (d *DeleteRecordsResponse) decode(pd packetDecoder, version int16) error {
 }
 
 func (d *DeleteRecordsResponse) key() int16 {
-	return apiKeyDeleteRecords
+	return 21
 }
 
 func (d *DeleteRecordsResponse) version() int16 {
@@ -118,7 +113,7 @@ func (t *DeleteRecordsResponseTopic) encode(pe packetEncoder) error {
 	for partition := range t.Partitions {
 		keys = append(keys, partition)
 	}
-	slices.Sort(keys)
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
 	for _, partition := range keys {
 		pe.putInt32(partition)
 		if err := t.Partitions[partition].encode(pe); err != nil {

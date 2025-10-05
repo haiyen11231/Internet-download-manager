@@ -2,12 +2,14 @@ package app
 
 import (
 	"context"
-	"net/http"
 	"syscall"
 
-	"github.com/haiyen11231/Internet-download-manager/internal/handler/grpc"
-	"github.com/haiyen11231/Internet-download-manager/internal/utils"
 	"go.uber.org/zap"
+
+	"github.com/haiyen11231/Internet-download-manager/internal/handler/consumers"
+	"github.com/haiyen11231/Internet-download-manager/internal/handler/grpc"
+	"github.com/haiyen11231/Internet-download-manager/internal/handler/http"
+	"github.com/haiyen11231/Internet-download-manager/internal/utils"
 )
 
 type Server struct {

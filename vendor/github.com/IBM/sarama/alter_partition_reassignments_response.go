@@ -39,10 +39,6 @@ type AlterPartitionReassignmentsResponse struct {
 	Errors         map[string]map[int32]*alterPartitionReassignmentsErrorBlock
 }
 
-func (r *AlterPartitionReassignmentsResponse) setVersion(v int16) {
-	r.Version = v
-}
-
 func (r *AlterPartitionReassignmentsResponse) AddError(topic string, partition int32, kerror KError, message *string) {
 	if r.Errors == nil {
 		r.Errors = make(map[string]map[int32]*alterPartitionReassignmentsErrorBlock)
@@ -147,7 +143,7 @@ func (r *AlterPartitionReassignmentsResponse) decode(pd packetDecoder, version i
 }
 
 func (r *AlterPartitionReassignmentsResponse) key() int16 {
-	return apiKeyAlterPartitionReassignments
+	return 45
 }
 
 func (r *AlterPartitionReassignmentsResponse) version() int16 {

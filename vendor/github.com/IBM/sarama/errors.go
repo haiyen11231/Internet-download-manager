@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+
+	"github.com/hashicorp/go-multierror"
 )
 
 // ErrOutOfBrokers is the error returned when the client has run out of brokers to talk to because all of them errored
@@ -86,13 +88,10 @@ var ErrCannotTransitionNilError = errors.New("transaction manager: cannot transi
 // ErrTxnUnableToParseResponse when response is nil
 var ErrTxnUnableToParseResponse = errors.New("transaction manager: unable to parse response")
 
-// ErrUnknownMessage when the protocol message key is not recognized
-var ErrUnknownMessage = errors.New("kafka: unknown protocol message key")
-
-// MultiErrorFormat specifies the formatter applied to format multierrors.
-//
-// Deprecated: Please use [errors.Join] instead.
-func MultiErrorFormat(es []error) string {
+// MultiErrorFormat specifies the formatter applied to format multierrors. The
+// default implementation is a condensed version of the hashicorp/go-multierror
+// default one
+var MultiErrorFormat multierror.ErrorFormatFunc = func(es []error) string {
 	if len(es) == 1 {
 		return es[0].Error()
 	}
@@ -129,7 +128,15 @@ func (err sentinelError) Unwrap() error {
 }
 
 func Wrap(sentinel error, wrapped ...error) sentinelError {
-	return sentinelError{sentinel: sentinel, wrapped: errors.Join(wrapped...)}
+	return sentinelError{sentinel: sentinel, wrapped: multiError(wrapped...)}
+}
+
+func multiError(wrapped ...error) error {
+	merr := multierror.Append(nil, wrapped...)
+	if MultiErrorFormat != nil {
+		merr.ErrorFormat = MultiErrorFormat
+	}
+	return merr.ErrorOrNil()
 }
 
 // PacketEncodingError is returned from a failure while encoding a Kafka packet. This can happen, for example,
@@ -297,7 +304,7 @@ func (err KError) Error() string {
 	case ErrOffsetsLoadInProgress:
 		return "kafka server: The coordinator is still loading offsets and cannot currently process requests"
 	case ErrConsumerCoordinatorNotAvailable:
-		return "kafka server: The coordinator is not available"
+		return "kafka server: Offset's topic has not yet been created"
 	case ErrNotCoordinatorForConsumer:
 		return "kafka server: Request was for a consumer group that is not coordinated by this broker"
 	case ErrInvalidTopic:

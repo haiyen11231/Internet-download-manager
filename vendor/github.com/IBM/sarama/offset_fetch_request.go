@@ -7,10 +7,6 @@ type OffsetFetchRequest struct {
 	partitions    map[string][]int32
 }
 
-func (r *OffsetFetchRequest) setVersion(v int16) {
-	r.Version = v
-}
-
 func NewOffsetFetchRequest(
 	version KafkaVersion,
 	group string,
@@ -197,7 +193,7 @@ func (r *OffsetFetchRequest) decode(pd packetDecoder, version int16) (err error)
 }
 
 func (r *OffsetFetchRequest) key() int16 {
-	return apiKeyOffsetFetch
+	return 9
 }
 
 func (r *OffsetFetchRequest) version() int16 {

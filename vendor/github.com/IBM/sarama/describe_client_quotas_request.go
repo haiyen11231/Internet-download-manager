@@ -16,10 +16,6 @@ type DescribeClientQuotasRequest struct {
 	Strict     bool
 }
 
-func (d *DescribeClientQuotasRequest) setVersion(v int16) {
-	d.Version = v
-}
-
 // Describe a component for applying a client quota filter.
 // EntityType: the entity type the filter component applies to ("user", "client-id", "ip")
 // MatchType: the match type of the filter component (any, exact, default)
@@ -91,7 +87,7 @@ func (d *QuotaFilterComponent) encode(pe packetEncoder) error {
 			return err
 		}
 	} else if d.MatchType == QuotaMatchDefault {
-		if err := pe.putNullableString(nil); err != nil {
+		if err := pe.putString(""); err != nil {
 			return err
 		}
 	} else {
@@ -130,7 +126,7 @@ func (d *QuotaFilterComponent) decode(pd packetDecoder, version int16) error {
 }
 
 func (d *DescribeClientQuotasRequest) key() int16 {
-	return apiKeyDescribeClientQuotas
+	return 48
 }
 
 func (d *DescribeClientQuotasRequest) version() int16 {

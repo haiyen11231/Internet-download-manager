@@ -9,10 +9,6 @@ type CreateAclsResponse struct {
 	AclCreationResponses []*AclCreationResponse
 }
 
-func (c *CreateAclsResponse) setVersion(v int16) {
-	c.Version = v
-}
-
 func (c *CreateAclsResponse) encode(pe packetEncoder) error {
 	pe.putInt32(int32(c.ThrottleTime / time.Millisecond))
 
@@ -53,7 +49,7 @@ func (c *CreateAclsResponse) decode(pd packetDecoder, version int16) (err error)
 }
 
 func (c *CreateAclsResponse) key() int16 {
-	return apiKeyCreateAcls
+	return 30
 }
 
 func (c *CreateAclsResponse) version() int16 {

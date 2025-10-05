@@ -10,10 +10,6 @@ type InitProducerIDResponse struct {
 	ProducerEpoch int16
 }
 
-func (i *InitProducerIDResponse) setVersion(v int16) {
-	i.Version = v
-}
-
 func (i *InitProducerIDResponse) encode(pe packetEncoder) error {
 	pe.putInt32(int32(i.ThrottleTime / time.Millisecond))
 	pe.putInt16(int16(i.Err))
@@ -59,7 +55,7 @@ func (i *InitProducerIDResponse) decode(pd packetDecoder, version int16) (err er
 }
 
 func (i *InitProducerIDResponse) key() int16 {
-	return apiKeyInitProducerId
+	return 22
 }
 
 func (i *InitProducerIDResponse) version() int16 {

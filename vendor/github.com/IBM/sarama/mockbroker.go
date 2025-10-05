@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"maps"
 	"net"
 	"reflect"
 	"strconv"
@@ -87,7 +86,9 @@ func (b *MockBroker) SetLatency(latency time.Duration) {
 // If the request type is not found in the map then nothing is sent.
 func (b *MockBroker) SetHandlerByMap(handlerMap map[string]MockResponse) {
 	fnMap := make(map[string]MockResponse)
-	maps.Copy(fnMap, handlerMap)
+	for k, v := range handlerMap {
+		fnMap[k] = v
+	}
 	b.setHandler(func(req *request) (res encoderWithHeader) {
 		reqTypeName := reflect.TypeOf(req.body).Elem().Name()
 		mockResponse := fnMap[reqTypeName]
@@ -103,7 +104,9 @@ func (b *MockBroker) SetHandlerByMap(handlerMap map[string]MockResponse) {
 // and invoke the found RequestHandlerFunc instance to generate an appropriate reply.
 func (b *MockBroker) SetHandlerFuncByMap(handlerMap map[string]requestHandlerFunc) {
 	fnMap := make(map[string]requestHandlerFunc)
-	maps.Copy(fnMap, handlerMap)
+	for k, v := range handlerMap {
+		fnMap[k] = v
+	}
 	b.setHandler(func(req *request) (res encoderWithHeader) {
 		reqTypeName := reflect.TypeOf(req.body).Elem().Name()
 		return fnMap[reqTypeName](req)

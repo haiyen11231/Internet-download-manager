@@ -52,10 +52,6 @@ type OffsetRequest struct {
 	blocks         map[string]map[int32]*offsetRequestBlock
 }
 
-func (r *OffsetRequest) setVersion(v int16) {
-	r.Version = v
-}
-
 func (r *OffsetRequest) encode(pe packetEncoder) error {
 	if r.isReplicaIDSet {
 		pe.putInt32(r.replicaID)
@@ -148,7 +144,7 @@ func (r *OffsetRequest) decode(pd packetDecoder, version int16) error {
 }
 
 func (r *OffsetRequest) key() int16 {
-	return apiKeyListOffsets
+	return 2
 }
 
 func (r *OffsetRequest) version() int16 {

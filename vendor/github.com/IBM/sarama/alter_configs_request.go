@@ -7,10 +7,6 @@ type AlterConfigsRequest struct {
 	ValidateOnly bool
 }
 
-func (a *AlterConfigsRequest) setVersion(v int16) {
-	a.Version = v
-}
-
 // AlterConfigsResource is an alter config resource type
 type AlterConfigsResource struct {
 	Type          ConfigResourceType
@@ -115,7 +111,7 @@ func (a *AlterConfigsResource) decode(pd packetDecoder, version int16) error {
 }
 
 func (a *AlterConfigsRequest) key() int16 {
-	return apiKeyAlterConfigs
+	return 33
 }
 
 func (a *AlterConfigsRequest) version() int16 {

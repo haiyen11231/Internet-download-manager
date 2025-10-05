@@ -85,10 +85,6 @@ type ProduceResponse struct {
 	ThrottleTime time.Duration // v1, throttle_time_ms
 }
 
-func (r *ProduceResponse) setVersion(v int16) {
-	r.Version = v
-}
-
 func (r *ProduceResponse) decode(pd packetDecoder, version int16) (err error) {
 	r.Version = version
 
@@ -168,7 +164,7 @@ func (r *ProduceResponse) encode(pe packetEncoder) error {
 }
 
 func (r *ProduceResponse) key() int16 {
-	return apiKeyProduce
+	return 0
 }
 
 func (r *ProduceResponse) version() int16 {

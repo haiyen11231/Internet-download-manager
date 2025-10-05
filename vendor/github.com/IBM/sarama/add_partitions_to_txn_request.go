@@ -9,10 +9,6 @@ type AddPartitionsToTxnRequest struct {
 	TopicPartitions map[string][]int32
 }
 
-func (a *AddPartitionsToTxnRequest) setVersion(v int16) {
-	a.Version = v
-}
-
 func (a *AddPartitionsToTxnRequest) encode(pe packetEncoder) error {
 	if err := pe.putString(a.TransactionalID); err != nil {
 		return err
@@ -70,7 +66,7 @@ func (a *AddPartitionsToTxnRequest) decode(pd packetDecoder, version int16) (err
 }
 
 func (a *AddPartitionsToTxnRequest) key() int16 {
-	return apiKeyAddPartitionsToTxn
+	return 24
 }
 
 func (a *AddPartitionsToTxnRequest) version() int16 {

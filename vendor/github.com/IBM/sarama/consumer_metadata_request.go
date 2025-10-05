@@ -6,10 +6,6 @@ type ConsumerMetadataRequest struct {
 	ConsumerGroup string
 }
 
-func (r *ConsumerMetadataRequest) setVersion(v int16) {
-	r.Version = v
-}
-
 func (r *ConsumerMetadataRequest) encode(pe packetEncoder) error {
 	tmp := new(FindCoordinatorRequest)
 	tmp.CoordinatorKey = r.ConsumerGroup
@@ -28,7 +24,7 @@ func (r *ConsumerMetadataRequest) decode(pd packetDecoder, version int16) (err e
 }
 
 func (r *ConsumerMetadataRequest) key() int16 {
-	return apiKeyFindCoordinator
+	return 10
 }
 
 func (r *ConsumerMetadataRequest) version() int16 {

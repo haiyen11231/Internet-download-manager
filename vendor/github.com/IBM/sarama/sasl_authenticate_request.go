@@ -6,9 +6,8 @@ type SaslAuthenticateRequest struct {
 	SaslAuthBytes []byte
 }
 
-func (r *SaslAuthenticateRequest) setVersion(v int16) {
-	r.Version = v
-}
+// APIKeySASLAuth is the API key for the SaslAuthenticate Kafka API
+const APIKeySASLAuth = 36
 
 func (r *SaslAuthenticateRequest) encode(pe packetEncoder) error {
 	return pe.putBytes(r.SaslAuthBytes)
@@ -21,7 +20,7 @@ func (r *SaslAuthenticateRequest) decode(pd packetDecoder, version int16) (err e
 }
 
 func (r *SaslAuthenticateRequest) key() int16 {
-	return apiKeySASLAuth
+	return APIKeySASLAuth
 }
 
 func (r *SaslAuthenticateRequest) version() int16 {

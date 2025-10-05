@@ -14,10 +14,6 @@ type LeaveGroupResponse struct {
 	Members      []MemberResponse
 }
 
-func (r *LeaveGroupResponse) setVersion(v int16) {
-	r.Version = v
-}
-
 func (r *LeaveGroupResponse) encode(pe packetEncoder) error {
 	if r.Version >= 1 {
 		pe.putInt32(r.ThrottleTime)
@@ -78,7 +74,7 @@ func (r *LeaveGroupResponse) decode(pd packetDecoder, version int16) (err error)
 }
 
 func (r *LeaveGroupResponse) key() int16 {
-	return apiKeyLeaveGroup
+	return 13
 }
 
 func (r *LeaveGroupResponse) version() int16 {

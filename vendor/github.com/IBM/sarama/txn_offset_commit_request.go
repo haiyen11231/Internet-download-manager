@@ -9,10 +9,6 @@ type TxnOffsetCommitRequest struct {
 	Topics          map[string][]*PartitionOffsetMetadata
 }
 
-func (t *TxnOffsetCommitRequest) setVersion(v int16) {
-	t.Version = v
-}
-
 func (t *TxnOffsetCommitRequest) encode(pe packetEncoder) error {
 	if err := pe.putString(t.TransactionalID); err != nil {
 		return err
@@ -90,7 +86,7 @@ func (t *TxnOffsetCommitRequest) decode(pd packetDecoder, version int16) (err er
 }
 
 func (a *TxnOffsetCommitRequest) key() int16 {
-	return apiKeyTxnOffsetCommit
+	return 28
 }
 
 func (a *TxnOffsetCommitRequest) version() int16 {

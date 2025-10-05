@@ -12,10 +12,6 @@ type LeaveGroupRequest struct {
 	Members  []MemberIdentity // Added in Version 3
 }
 
-func (r *LeaveGroupRequest) setVersion(v int16) {
-	r.Version = v
-}
-
 func (r *LeaveGroupRequest) encode(pe packetEncoder) error {
 	if err := pe.putString(r.GroupId); err != nil {
 		return err
@@ -74,7 +70,7 @@ func (r *LeaveGroupRequest) decode(pd packetDecoder, version int16) (err error) 
 }
 
 func (r *LeaveGroupRequest) key() int16 {
-	return apiKeyLeaveGroup
+	return 13
 }
 
 func (r *LeaveGroupRequest) version() int16 {

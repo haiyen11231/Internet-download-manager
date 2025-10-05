@@ -10,10 +10,6 @@ type AlterUserScramCredentialsResponse struct {
 	Results []*AlterUserScramCredentialsResult
 }
 
-func (r *AlterUserScramCredentialsResponse) setVersion(v int16) {
-	r.Version = v
-}
-
 type AlterUserScramCredentialsResult struct {
 	User string
 
@@ -82,7 +78,7 @@ func (r *AlterUserScramCredentialsResponse) decode(pd packetDecoder, version int
 }
 
 func (r *AlterUserScramCredentialsResponse) key() int16 {
-	return apiKeyAlterUserScramCredentials
+	return 51
 }
 
 func (r *AlterUserScramCredentialsResponse) version() int16 {

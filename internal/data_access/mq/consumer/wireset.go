@@ -2,6 +2,6 @@ package consumer
 
 import "github.com/google/wire"
 
-var Wire = wire.NewSet(
+var WireSet = wire.NewSet(
 	NewConsumer,
 )

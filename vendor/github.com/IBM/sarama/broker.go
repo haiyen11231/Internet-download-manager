@@ -29,7 +29,7 @@ type Broker struct {
 	conn          net.Conn
 	connErr       error
 	lock          sync.Mutex
-	opened        atomic.Bool
+	opened        int32
 	responses     chan *responsePromise
 	done          chan bool
 
@@ -55,13 +55,11 @@ type Broker struct {
 	brokerRequestsInFlight     metrics.Counter
 	brokerThrottleTime         metrics.Histogram
 	brokerProtocolRequestsRate map[int16]metrics.Meter
-	brokerAPIVersions          apiVersionMap
 
 	kerberosAuthenticator               GSSAPIKerberosAuth
 	clientSessionReauthenticationTimeMs int64
 
-	throttleTimer     *time.Timer
-	throttleTimerLock sync.Mutex
+	throttleTimer *time.Timer
 }
 
 // SASLMechanism specifies the SASL mechanism the client uses to authenticate with the broker
@@ -130,7 +128,7 @@ type SCRAMClient interface {
 type responsePromise struct {
 	requestTime   time.Time
 	correlationID int32
-	response      protocolBody
+	headerVersion int16
 	handler       func([]byte, error)
 	packets       chan []byte
 	errors        chan error
@@ -162,7 +160,7 @@ func NewBroker(addr string) *Broker {
 // follow it by a call to Connected(). The only errors Open will return directly are ConfigurationError or
 // AlreadyConnected. If conf is nil, the result of NewConfig() is used.
 func (b *Broker) Open(conf *Config) error {
-	if !b.opened.CompareAndSwap(false, true) {
+	if !atomic.CompareAndSwapInt32(&b.opened, 0, 1) {
 		return ErrAlreadyConnected
 	}
 
@@ -175,6 +173,8 @@ func (b *Broker) Open(conf *Config) error {
 		return err
 	}
 
+	usingApiVersionsRequests := conf.Version.IsAtLeast(V2_4_0_0) && conf.ApiVersionsRequest
+
 	b.lock.Lock()
 
 	if b.metricRegistry == nil {
@@ -182,14 +182,29 @@ func (b *Broker) Open(conf *Config) error {
 	}
 
 	go withRecover(func() {
-		defer b.lock.Unlock()
+		defer func() {
+			b.lock.Unlock()
 
+			// Send an ApiVersionsRequest to identify the client (KIP-511).
+			// Ideally Sarama would use the response to control protocol versions,
+			// but for now just fire-and-forget just to send
+			if usingApiVersionsRequests {
+				_, err = b.ApiVersions(&ApiVersionsRequest{
+					Version:               3,
+					ClientSoftwareName:    defaultClientSoftwareName,
+					ClientSoftwareVersion: version(),
+				})
+				if err != nil {
+					Logger.Printf("Error while sending ApiVersionsRequest to broker %s: %s\n", b.addr, err)
+				}
+			}
+		}()
 		dialer := conf.getDialer()
 		b.conn, b.connErr = dialer.Dial("tcp", b.addr)
 		if b.connErr != nil {
 			Logger.Printf("Failed to connect to broker %s: %s\n", b.addr, b.connErr)
 			b.conn = nil
-			b.opened.Store(false)
+			atomic.StoreInt32(&b.opened, 0)
 			return
 		}
 		if conf.Net.TLS.Enable {
@@ -216,45 +231,23 @@ func (b *Broker) Open(conf *Config) error {
 			b.registerMetrics()
 		}
 
-		// Send an ApiVersionsRequest to identify the client (KIP-511).
-		// Store the response in the brokerAPIVersions map.
-		// It will be used to determine the supported API versions for each request.
-		// This should happen before SASL authentication: https://kafka.apache.org/26/protocol.html#api_versions
-		if conf.ApiVersionsRequest {
-			apiVersionsResponse, err := b.sendAndReceiveApiVersions(3)
-			if err != nil {
-				Logger.Printf("Error while sending ApiVersionsRequest to broker %s: %s\n", b.addr, err)
-				// send a v0 request in case remote cluster is < 2.4.0.0
-				apiVersionsResponse, _ = b.sendAndReceiveApiVersions(0)
-			}
-			if apiVersionsResponse != nil {
-				b.brokerAPIVersions = make(apiVersionMap, len(apiVersionsResponse.ApiKeys))
-				for _, key := range apiVersionsResponse.ApiKeys {
-					b.brokerAPIVersions[key.ApiKey] = &apiVersionRange{
-						minVersion: key.MinVersion,
-						maxVersion: key.MaxVersion,
-					}
-				}
-			}
-		}
-
 		if conf.Net.SASL.Mechanism == SASLTypeOAuth && conf.Net.SASL.Version == SASLHandshakeV0 {
 			conf.Net.SASL.Version = SASLHandshakeV1
 		}
 
-		useSaslV0 := conf.Net.SASL.Version == SASLHandshakeV0
+		useSaslV0 := conf.Net.SASL.Version == SASLHandshakeV0 || conf.Net.SASL.Mechanism == SASLTypeGSSAPI
 		if conf.Net.SASL.Enable && useSaslV0 {
 			b.connErr = b.authenticateViaSASLv0()
 
 			if b.connErr != nil {
 				err = b.conn.Close()
 				if err == nil {
-					DebugLogger.Printf("Closed connection to broker %s due to SASL v0 auth error: %s\n", b.addr, b.connErr)
+					DebugLogger.Printf("Closed connection to broker %s\n", b.addr)
 				} else {
-					Logger.Printf("Error while closing connection to broker %s (due to SASL v0 auth error: %s): %s\n", b.addr, b.connErr, err)
+					Logger.Printf("Error while closing connection to broker %s: %s\n", b.addr, err)
 				}
 				b.conn = nil
-				b.opened.Store(false)
+				atomic.StoreInt32(&b.opened, 0)
 				return
 			}
 		}
@@ -270,12 +263,12 @@ func (b *Broker) Open(conf *Config) error {
 				<-b.done
 				err = b.conn.Close()
 				if err == nil {
-					DebugLogger.Printf("Closed connection to broker %s due to SASL v1 auth error: %s\n", b.addr, b.connErr)
+					DebugLogger.Printf("Closed connection to broker %s\n", b.addr)
 				} else {
-					Logger.Printf("Error while closing connection to broker %s (due to SASL v1 auth error: %s): %s\n", b.addr, b.connErr, err)
+					Logger.Printf("Error while closing connection to broker %s: %s\n", b.addr, err)
 				}
 				b.conn = nil
-				b.opened.Store(false)
+				atomic.StoreInt32(&b.opened, 0)
 				return
 			}
 		}
@@ -349,7 +342,8 @@ func (b *Broker) Close() error {
 	} else {
 		Logger.Printf("Error while closing connection to broker %s: %s\n", b.addr, err)
 	}
-	b.opened.Store(false)
+
+	atomic.StoreInt32(&b.opened, 0)
 
 	return err
 }
@@ -454,7 +448,7 @@ func (b *Broker) AsyncProduce(request *ProduceRequest, cb ProduceCallback) error
 		// Create ProduceResponse early to provide the header version
 		res := new(ProduceResponse)
 		promise = &responsePromise{
-			response: res,
+			headerVersion: res.headerVersion(),
 			// Packets will be converted to a ProduceResponse in the responseReceiver goroutine
 			handler: func(packets []byte, err error) {
 				if err != nil {
@@ -685,18 +679,6 @@ func (b *Broker) AlterPartitionReassignments(request *AlterPartitionReassignment
 // returns list partition reassignments response
 func (b *Broker) ListPartitionReassignments(request *ListPartitionReassignmentsRequest) (*ListPartitionReassignmentsResponse, error) {
 	response := new(ListPartitionReassignmentsResponse)
-
-	err := b.sendAndReceive(request, response)
-	if err != nil {
-		return nil, err
-	}
-
-	return response, nil
-}
-
-// ElectLeaders sends aa elect leaders request and returns list partitions elect result
-func (b *Broker) ElectLeaders(request *ElectLeadersRequest) (*ElectLeadersResponse, error) {
-	response := new(ElectLeadersResponse)
 
 	err := b.sendAndReceive(request, response)
 	if err != nil {
@@ -958,48 +940,37 @@ func (b *Broker) readFull(buf []byte) (n int, err error) {
 	return io.ReadFull(b.conn, buf)
 }
 
-// write ensures the conn Deadline has been setup before making a
+// write  ensures the conn WriteDeadline has been setup before making a
 // call to conn.Write
 func (b *Broker) write(buf []byte) (n int, err error) {
-	now := time.Now()
-	if err := b.conn.SetWriteDeadline(now.Add(b.conf.Net.WriteTimeout)); err != nil {
+	if err := b.conn.SetWriteDeadline(time.Now().Add(b.conf.Net.WriteTimeout)); err != nil {
 		return 0, err
-	}
-	// TLS connections require both read and write deadlines to be set
-	// to avoid handshake indefinite blocking
-	// see https://github.com/golang/go/blob/go1.23.0/src/crypto/tls/conn.go#L1192-L1195
-	if b.conf.Net.TLS.Enable {
-		if err := b.conn.SetReadDeadline(now.Add(b.conf.Net.ReadTimeout)); err != nil {
-			return 0, err
-		}
 	}
 
 	return b.conn.Write(buf)
 }
 
 // b.lock must be held by caller
-//
-// a non-nil res results in a response promise being created
-func (b *Broker) send(req, res protocolBody) (*responsePromise, error) {
+func (b *Broker) send(rb protocolBody, promiseResponse bool, responseHeaderVersion int16) (*responsePromise, error) {
 	var promise *responsePromise
-	if res != nil {
+	if promiseResponse {
 		// Packets or error will be sent to the following channels
 		// once the response is received
-		promise = makeResponsePromise(res)
+		promise = makeResponsePromise(responseHeaderVersion)
 	}
 
-	if err := b.sendWithPromise(req, promise); err != nil {
+	if err := b.sendWithPromise(rb, promise); err != nil {
 		return nil, err
 	}
 
 	return promise, nil
 }
 
-func makeResponsePromise(res protocolBody) *responsePromise {
+func makeResponsePromise(responseHeaderVersion int16) *responsePromise {
 	promise := &responsePromise{
-		response: res,
-		packets:  make(chan []byte),
-		errors:   make(chan error),
+		headerVersion: responseHeaderVersion,
+		packets:       make(chan []byte),
+		errors:        make(chan error),
 	}
 	return promise
 }
@@ -1025,16 +996,6 @@ func (b *Broker) sendWithPromise(rb protocolBody, promise *responsePromise) erro
 
 // b.lock must be held by caller
 func (b *Broker) sendInternal(rb protocolBody, promise *responsePromise) error {
-	// try restricting API version to ranges advertised by the broker
-	if err := restrictApiVersion(rb, b.brokerAPIVersions); err != nil {
-		return err
-	}
-
-	// response versions must always match their corresponding request's
-	if promise != nil && promise.response != nil {
-		promise.response.setVersion(rb.version())
-	}
-
 	if !b.conf.Version.IsAtLeast(rb.requiredVersion()) {
 		return ErrUnsupportedVersion
 	}
@@ -1076,8 +1037,12 @@ func (b *Broker) sendInternal(rb protocolBody, promise *responsePromise) error {
 func (b *Broker) sendAndReceive(req protocolBody, res protocolBody) error {
 	b.lock.Lock()
 	defer b.lock.Unlock()
+	responseHeaderVersion := int16(-1)
+	if res != nil {
+		responseHeaderVersion = res.headerVersion()
+	}
 
-	promise, err := b.send(req, res)
+	promise, err := b.send(req, res != nil, responseHeaderVersion)
 	if err != nil {
 		return err
 	}
@@ -1195,41 +1160,41 @@ func (b *Broker) encode(pe packetEncoder, version int16) (err error) {
 func (b *Broker) responseReceiver() {
 	var dead error
 
-	for promise := range b.responses {
+	for response := range b.responses {
 		if dead != nil {
 			// This was previously incremented in send() and
 			// we are not calling updateIncomingCommunicationMetrics()
 			b.addRequestInFlightMetrics(-1)
-			promise.handle(nil, dead)
+			response.handle(nil, dead)
 			continue
 		}
 
-		headerLength := getHeaderLength(promise.response.headerVersion())
+		headerLength := getHeaderLength(response.headerVersion)
 		header := make([]byte, headerLength)
 
 		bytesReadHeader, err := b.readFull(header)
-		requestLatency := time.Since(promise.requestTime)
+		requestLatency := time.Since(response.requestTime)
 		if err != nil {
 			b.updateIncomingCommunicationMetrics(bytesReadHeader, requestLatency)
 			dead = err
-			promise.handle(nil, err)
+			response.handle(nil, err)
 			continue
 		}
 
 		decodedHeader := responseHeader{}
-		err = versionedDecode(header, &decodedHeader, promise.response.headerVersion(), b.metricRegistry)
+		err = versionedDecode(header, &decodedHeader, response.headerVersion, b.metricRegistry)
 		if err != nil {
 			b.updateIncomingCommunicationMetrics(bytesReadHeader, requestLatency)
 			dead = err
-			promise.handle(nil, err)
+			response.handle(nil, err)
 			continue
 		}
-		if decodedHeader.correlationID != promise.correlationID {
+		if decodedHeader.correlationID != response.correlationID {
 			b.updateIncomingCommunicationMetrics(bytesReadHeader, requestLatency)
 			// TODO if decoded ID < cur ID, discard until we catch up
 			// TODO if decoded ID > cur ID, save it so when cur ID catches up we have a response
-			dead = PacketDecodingError{fmt.Sprintf("correlation ID didn't match, wanted %d, got %d", promise.correlationID, decodedHeader.correlationID)}
-			promise.handle(nil, dead)
+			dead = PacketDecodingError{fmt.Sprintf("correlation ID didn't match, wanted %d, got %d", response.correlationID, decodedHeader.correlationID)}
+			response.handle(nil, dead)
 			continue
 		}
 
@@ -1238,11 +1203,11 @@ func (b *Broker) responseReceiver() {
 		b.updateIncomingCommunicationMetrics(bytesReadHeader+bytesReadBody, requestLatency)
 		if err != nil {
 			dead = err
-			promise.handle(nil, err)
+			response.handle(nil, err)
 			continue
 		}
 
-		promise.handle(buf, nil)
+		response.handle(buf, nil)
 	}
 	close(b.done)
 }
@@ -1254,67 +1219,6 @@ func getHeaderLength(headerVersion int16) int8 {
 		// header contains additional tagged field length (0), we don't support actual tags yet.
 		return 9
 	}
-}
-
-func (b *Broker) sendAndReceiveApiVersions(v int16) (*ApiVersionsResponse, error) {
-	rb := &ApiVersionsRequest{
-		Version:               v,
-		ClientSoftwareName:    defaultClientSoftwareName,
-		ClientSoftwareVersion: version(),
-	}
-
-	req := &request{correlationID: b.correlationID, clientID: b.conf.ClientID, body: rb}
-	buf, err := encode(req, b.metricRegistry)
-	if err != nil {
-		return nil, err
-	}
-
-	requestTime := time.Now()
-	// Will be decremented in updateIncomingCommunicationMetrics (except error)
-	b.addRequestInFlightMetrics(1)
-	bytes, err := b.write(buf)
-	b.updateOutgoingCommunicationMetrics(bytes)
-	if err != nil {
-		b.addRequestInFlightMetrics(-1)
-		Logger.Printf("Failed to send ApiVersions request to %s: %s\n", b.addr, err)
-		return nil, err
-	}
-	b.correlationID++
-
-	// Kafka protocol response structure:
-	// - Message length (4 bytes): Total length of the response excluding this field
-	// - ResponseHeader v0 (4 bytes): Contains correlation ID for request-response matching
-	header := make([]byte, 8)
-	_, err = b.readFull(header)
-	if err != nil {
-		b.addRequestInFlightMetrics(-1)
-		Logger.Printf("Failed to read ApiVersions response header from %s: %s\n", b.addr, err)
-		return nil, err
-	}
-
-	length := binary.BigEndian.Uint32(header[:4])
-	// we're not using the correlation ID here, but it is part of the response header
-	// correlationID := binary.BigEndian.Uint32(header[4:])
-
-	payload := make([]byte, length-4)
-	n, err := b.readFull(payload)
-	if err != nil {
-		b.addRequestInFlightMetrics(-1)
-		Logger.Printf("Failed to read ApiVersions response payload from %s: %s\n", b.addr, err)
-		return nil, err
-	}
-
-	b.updateIncomingCommunicationMetrics(n+8, time.Since(requestTime))
-	res := &ApiVersionsResponse{}
-
-	err = versionedDecode(payload, res, rb.version(), b.metricRegistry)
-	if err != nil {
-		Logger.Printf("Failed to parse ApiVersions response from %s: %s\n", b.addr, err)
-		return nil, err
-	}
-
-	DebugLogger.Printf("Completed ApiVersions request to %s. Broker supports %d APIs\n", b.addr, len(res.ApiKeys))
-	return res, nil
 }
 
 func (b *Broker) authenticateViaSASLv0() error {
@@ -1333,16 +1237,16 @@ func (b *Broker) authenticateViaSASLv1() error {
 	if b.conf.Net.SASL.Handshake {
 		handshakeRequest := &SaslHandshakeRequest{Mechanism: string(b.conf.Net.SASL.Mechanism), Version: b.conf.Net.SASL.Version}
 		handshakeResponse := new(SaslHandshakeResponse)
-		prom := makeResponsePromise(handshakeResponse)
+		prom := makeResponsePromise(handshakeResponse.version())
 
 		handshakeErr := b.sendInternal(handshakeRequest, prom)
 		if handshakeErr != nil {
-			Logger.Printf("Error while performing SASL handshake %s: %s\n", b.addr, handshakeErr)
+			Logger.Printf("Error while performing SASL handshake %s\n", b.addr)
 			return handshakeErr
 		}
 		handshakeErr = handleResponsePromise(handshakeRequest, handshakeResponse, prom, metricRegistry)
 		if handshakeErr != nil {
-			Logger.Printf("Error while handling SASL handshake response %s: %s\n", b.addr, handshakeErr)
+			Logger.Printf("Error while performing SASL handshake %s\n", b.addr)
 			return handshakeErr
 		}
 
@@ -1354,7 +1258,7 @@ func (b *Broker) authenticateViaSASLv1() error {
 	authSendReceiver := func(authBytes []byte) (*SaslAuthenticateResponse, error) {
 		authenticateRequest := b.createSaslAuthenticateRequest(authBytes)
 		authenticateResponse := new(SaslAuthenticateResponse)
-		prom := makeResponsePromise(authenticateResponse)
+		prom := makeResponsePromise(authenticateResponse.version())
 		authErr := b.sendInternal(authenticateRequest, prom)
 		if authErr != nil {
 			Logger.Printf("Error while performing SASL Auth %s\n", b.addr)
@@ -1362,7 +1266,7 @@ func (b *Broker) authenticateViaSASLv1() error {
 		}
 		authErr = handleResponsePromise(authenticateRequest, authenticateResponse, prom, metricRegistry)
 		if authErr != nil {
-			Logger.Printf("Error while performing SASL Auth %s: %s\n", b.addr, authErr)
+			Logger.Printf("Error while performing SASL Auth %s\n", b.addr)
 			return nil, authErr
 		}
 
@@ -1379,12 +1283,6 @@ func (b *Broker) authenticateViaSASLv1() error {
 	}
 
 	switch b.conf.Net.SASL.Mechanism {
-	case SASLTypeGSSAPI:
-		b.kerberosAuthenticator.Config = &b.conf.Net.SASL.GSSAPI
-		if b.kerberosAuthenticator.NewKerberosClientFunc == nil {
-			b.kerberosAuthenticator.NewKerberosClientFunc = NewKerberosClient
-		}
-		return b.kerberosAuthenticator.AuthorizeV2(b, authSendReceiver)
 	case SASLTypeOAuth:
 		provider := b.conf.Net.SASL.TokenProvider
 		return b.sendAndReceiveSASLOAuth(authSendReceiver, provider)
@@ -1486,7 +1384,7 @@ func (b *Broker) sendAndReceiveSASLPlainAuthV0() error {
 	if b.conf.Net.SASL.Handshake {
 		handshakeErr := b.sendAndReceiveSASLHandshake(SASLTypePlaintext, b.conf.Net.SASL.Version)
 		if handshakeErr != nil {
-			Logger.Printf("Error while performing SASL handshake %s: %s\n", b.addr, handshakeErr)
+			Logger.Printf("Error while performing SASL handshake %s\n", b.addr)
 			return handshakeErr
 		}
 	}
@@ -1527,6 +1425,9 @@ func (b *Broker) sendAndReceiveSASLPlainAuthV0() error {
 func (b *Broker) sendAndReceiveSASLPlainAuthV1(authSendReceiver func(authBytes []byte) (*SaslAuthenticateResponse, error)) error {
 	authBytes := []byte(b.conf.Net.SASL.AuthIdentity + "\x00" + b.conf.Net.SASL.User + "\x00" + b.conf.Net.SASL.Password)
 	_, err := authSendReceiver(authBytes)
+	if err != nil {
+		return err
+	}
 	return err
 }
 
@@ -1659,18 +1560,14 @@ func (b *Broker) createSaslAuthenticateRequest(msg []byte) *SaslAuthenticateRequ
 func buildClientFirstMessage(token *AccessToken) ([]byte, error) {
 	var ext string
 
-	if token == nil {
-		return []byte{}, fmt.Errorf("failed to build client first message: token is nil")
-	}
-
-	if len(token.Extensions) > 0 {
+	if token.Extensions != nil && len(token.Extensions) > 0 {
 		if _, ok := token.Extensions[SASLExtKeyAuth]; ok {
 			return []byte{}, fmt.Errorf("the extension `%s` is invalid", SASLExtKeyAuth)
 		}
 		ext = "\x01" + mapToString(token.Extensions, "=", "\x01")
 	}
 
-	resp := fmt.Appendf(nil, "n,,\x01auth=Bearer %s%s\x01\x01", token.Token, ext)
+	resp := []byte(fmt.Sprintf("n,,\x01auth=Bearer %s%s\x01\x01", token.Token, ext))
 
 	return resp, nil
 }
@@ -1800,8 +1697,6 @@ func (b *Broker) handleThrottledResponse(resp protocolBody) {
 }
 
 func (b *Broker) setThrottle(throttleTime time.Duration) {
-	b.throttleTimerLock.Lock()
-	defer b.throttleTimerLock.Unlock()
 	if b.throttleTimer != nil {
 		// if there is an existing timer stop/clear it
 		if !b.throttleTimer.Stop() {
@@ -1812,8 +1707,6 @@ func (b *Broker) setThrottle(throttleTime time.Duration) {
 }
 
 func (b *Broker) waitIfThrottled() {
-	b.throttleTimerLock.Lock()
-	defer b.throttleTimerLock.Unlock()
 	if b.throttleTimer != nil {
 		DebugLogger.Printf("broker/%d waiting for throttle timer\n", b.ID())
 		<-b.throttleTimer.C
