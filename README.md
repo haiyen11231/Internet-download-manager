@@ -1,8 +1,28 @@
-handler -> build, interact with external service (FE, client CLI, kafka, ...) - request grpc - request http - tieeps nhanaj event tu kafka - tiep nhan trigger manually tu cronjobs (CLI)
+# Internet Download Manager
 
-- can khoi tao, goi ham New o dau ->trong qua trinh khoi tao project -> cam vao server grpc cua minh -> khoi taoj new ben ngoai logic -> dependency injection -> wire -> tu dong nha biet cam dataaccessor vao dau
+This project implements a backend microservice system for managing and tracking internet downloads.
+It demonstrates how to build a Go application with modular design, gRPC communication, HTTP APIs, caching (Redis/in-memory), message queue (MQ), scheduled cron jobs and dependency injection using Google Wire.
 
-Task to do left:
+---
 
-1. Add protocvalidate - got some problems with buf cli to update
-2. Cleanup code - the function name and params not really consistent through project and
+## 📌 Features
+
+- **y** – abc
+
+---
+
+## 📂 Repository Structure
+
+```
+
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+-
+
+### Setup Instructions
