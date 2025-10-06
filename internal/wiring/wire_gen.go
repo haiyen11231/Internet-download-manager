@@ -13,6 +13,7 @@ import (
 	"github.com/haiyen11231/Internet-download-manager/internal/data_access"
 	"github.com/haiyen11231/Internet-download-manager/internal/data_access/cache"
 	"github.com/haiyen11231/Internet-download-manager/internal/data_access/database"
+	"github.com/haiyen11231/Internet-download-manager/internal/data_access/file"
 	"github.com/haiyen11231/Internet-download-manager/internal/data_access/mq/consumer"
 	"github.com/haiyen11231/Internet-download-manager/internal/data_access/mq/producer"
 	"github.com/haiyen11231/Internet-download-manager/internal/handler"
@@ -67,13 +68,20 @@ func InitializeServer(configFilePath configs.ConfigFilePath) (*app.Server, func(
 		return nil, nil, err
 	}
 	downloadTaskCreatedProducer := producer.NewDownloadTaskCreatedProducer(producerClient, logger)
-	downloadTask := logic.NewDownloadTask(token, accountDataAccessor, downloadTaskDataAccessor, downloadTaskCreatedProducer, goquDatabase, logger)
+	download := config.Download
+	fileClient, err := file.NewClient(download, logger)
+	if err != nil {
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	downloadTask := logic.NewDownloadTask(token, accountDataAccessor, downloadTaskDataAccessor, downloadTaskCreatedProducer, goquDatabase, fileClient, logger)
 	goLoadServiceServer := grpc.NewHandler(account, downloadTask)
 	configsGRPC := config.GRPC
 	server := grpc.NewServer(goLoadServiceServer, configsGRPC, logger)
 	configsHTTP := config.HTTP
 	httpServer := http.NewServer(configsGRPC, configsHTTP, auth, logger)
-	downloadTaskCreated := consumers.NewDownloadTaskCreated(logger)
+	downloadTaskCreated := consumers.NewDownloadTaskCreated(downloadTask, logger)
 	consumerConsumer, err := consumer.NewConsumer(mq, logger)
 	if err != nil {
 		cleanup2()

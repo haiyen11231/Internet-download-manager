@@ -1,25 +1,37 @@
 database:
-  host: 127.0.0.1
+  host: "127.0.0.1"
   port: 3306
-  username: goload
-  password: goload
-  database: goload
+  username: "goload"
+  password: "goload"
+  database: "goload"
+
 cache:
   type: "redis"
-  address: 127.0.0.1:6379
+  address: "127.0.0.1:6379"
   username: ""
   password: ""
+
 mq:
   addresses:
-    - 127.0.0.1:9092
+    - "127.0.0.1:9092"
   client_id: "go_load"
+
 auth:
   hash:
     hash_cost: 10
   token:
-    expire_in: 24h
-    regenerate_token_before_expiry: 1h
+    expire_in: "24h"
+    regenerate_token_before_expiry: "1h"
+
 grpc:
   address: "0.0.0.0:8080"
+
 http:
   address: "0.0.0.0:8081"
+
+download:
+  mode: "s3"
+  bucket: "downloaded-files"
+  address: "127.0.0.1:9000"
+  username: "goload"
+  password: "goload"

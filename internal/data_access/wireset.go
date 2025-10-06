@@ -5,6 +5,7 @@ import (
 
 	"github.com/haiyen11231/Internet-download-manager/internal/data_access/cache"
 	"github.com/haiyen11231/Internet-download-manager/internal/data_access/database"
+	"github.com/haiyen11231/Internet-download-manager/internal/data_access/file"
 	"github.com/haiyen11231/Internet-download-manager/internal/data_access/mq"
 )
 
@@ -12,4 +13,5 @@ var WireSet = wire.NewSet(
 	cache.WireSet,
 	database.WireSet,
 	mq.WireSet,
+	file.WireSet,
 )
