@@ -2,10 +2,13 @@ package grpc
 
 import (
 	"context"
+	"errors"
+	"io"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 
+	"github.com/haiyen11231/Internet-download-manager/internal/configs"
 	go_load "github.com/haiyen11231/Internet-download-manager/internal/generated/go_load/v1"
 	"github.com/haiyen11231/Internet-download-manager/internal/logic"
 )
@@ -18,18 +21,25 @@ const (
 // to forward input to logic layer + dkien condition khong the check bang validation
 type Handler struct {
 	go_load.UnimplementedGoLoadServiceServer
-	accountLogic logic.Account
+	accountLogic    logic.Account
 	downloadTaskLogic logic.DownloadTask
+	getDownloadTaskFileResponseBufferSizeInBytes uint64
 }
 
-func NewHandler(accountLogic logic.Account, downloadTaskLogic logic.DownloadTask) go_load.GoLoadServiceServer {
+func NewHandler(accountLogic logic.Account, downloadTaskLogic logic.DownloadTask, grpcConfig configs.GRPC) (go_load.GoLoadServiceServer, error) {
+	getDownloadTaskFileResponseBufferSizeInBytes, err := grpcConfig.GetDownloadTaskFile.GetResponseBufferSizeInBytes()
+	if err != nil {
+		return nil, err
+	}
+	
 	return &Handler{
 		accountLogic:    accountLogic,
 		downloadTaskLogic: downloadTaskLogic,
-	}
+		getDownloadTaskFileResponseBufferSizeInBytes: getDownloadTaskFileResponseBufferSizeInBytes,
+	}, nil
 }
 
-func (a Handler) getAuthTokenMetadata(ctx context.Context) string {
+func (h Handler) getAuthTokenMetadata(ctx context.Context) string {
 	metadata, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return ""
@@ -146,6 +156,40 @@ func (h Handler) DeleteDownloadTask(ctx context.Context, req *go_load.DeleteDown
 }
 
 // GetDownloadTaskFile streams file content
-func (h Handler) GetDownloadTaskFile(req *go_load.GetDownloadTaskFileRequest, stream go_load.GoLoadService_GetDownloadTaskFileServer) error {
-	panic("unimplemented")
+func (h Handler) GetDownloadTaskFile(req *go_load.GetDownloadTaskFileRequest, server go_load.GoLoadService_GetDownloadTaskFileServer) error {
+	outputReader, err := h.downloadTaskLogic.GetDownloadTaskFile(server.Context(), logic.GetDownloadTaskFileParams{
+		Token:          h.getAuthTokenMetadata(server.Context()),
+		DownloadTaskID: req.GetDownloadTaskId(),
+	})
+	if err != nil {
+		return err
+	}
+
+	defer outputReader.Close()
+
+	for {
+		dataBuffer := make([]byte, h.getDownloadTaskFileResponseBufferSizeInBytes)
+		readByteCount, readErr := outputReader.Read(dataBuffer)
+
+		if readByteCount > 0 {
+			sendErr := server.Send(&go_load.GetDownloadTaskFileResponse{
+				FileContent: dataBuffer[:readByteCount],
+			})
+			if sendErr != nil {
+				return sendErr
+			}
+
+			continue
+		}
+
+		if readErr != nil {
+			if errors.Is(readErr, io.EOF) {
+				break
+			}
+
+			return readErr
+		}
+	}
+
+	return nil
 }

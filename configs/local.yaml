@@ -25,6 +25,8 @@ auth:
 
 grpc:
   address: "0.0.0.0:8080"
+  get_download_task_file:
+    response_buffer_size: "1kB"
 
 http:
   address: "0.0.0.0:8081"
